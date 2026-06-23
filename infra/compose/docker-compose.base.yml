@@ -1,0 +1,79 @@
+# CloudCart - Servicios base para desarrollo local
+# Levanta: PostgreSQL, MongoDB, Redis, Keycloak
+
+services:
+  # PostgreSQL: datos transaccionales (usuarios, pedidos, pagos)
+  postgres:
+    image: postgres:16-alpine
+    container_name: cloudcart-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cloudcart
+      POSTGRES_PASSWORD: cloudcart_dev_password
+      POSTGRES_DB: cloudcart
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cloudcart"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MongoDB: catálogo de productos, reviews, configuración
+  mongo:
+    image: mongo:7
+    container_name: cloudcart-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: cloudcart
+      MONGO_INITDB_ROOT_PASSWORD: cloudcart_dev_password
+      MONGO_INITDB_DATABASE: cloudcart
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis: carrito, sesiones, cache, rate limiting
+  redis:
+    image: redis:7-alpine
+    container_name: cloudcart-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Keycloak: identity provider (OAuth2 + OIDC + multi-tenant)
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0
+    container_name: cloudcart-keycloak
+    restart: unless-stopped
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "8180:8080"
+    volumes:
+      - ./keycloak/realm-config.json:/opt/keycloak/data/import/realm-cloudcart.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  mongo_data:
+  redis_data:
