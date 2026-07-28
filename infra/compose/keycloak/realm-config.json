@@ -1,0 +1,80 @@
+{
+  "realm": "cloudcart",
+  "enabled": true,
+  "displayName": "CloudCart",
+  "accessTokenLifespan": 3600,
+  "sslRequired": "none",
+  "registrationAllowed": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "roles": {
+    "realm": [
+      { "name": "admin", "description": "Administrador de la tienda" },
+      { "name": "customer", "description": "Cliente de la tienda" }
+    ]
+  },
+  "users": [
+    {
+      "username": "admin-user",
+      "enabled": true,
+      "email": "admin@cloudcart.local",
+      "firstName": "Admin",
+      "lastName": "User",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["admin"]
+    },
+    {
+      "username": "customer-user",
+      "enabled": true,
+      "email": "customer@cloudcart.local",
+      "firstName": "Customer",
+      "lastName": "User",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "customer123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["customer"]
+    }
+  ],
+"clients": [
+    {
+      "clientId": "cloudcart-frontend",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "redirectUris": [
+        "http://localhost:3000/*",
+        "http://localhost:3001/*"
+      ],
+      "webOrigins": ["+"],
+      "protocol": "openid-connect"
+    },
+    {
+      "clientId": "cloudcart-backend",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "backend-secret-change-in-production",
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "serviceAccountsEnabled": true,
+      "redirectUris": ["*"],
+      "webOrigins": ["+"],
+      "protocol": "openid-connect"
+    }
+  ]
+}
