@@ -56,7 +56,20 @@
       "Bash(echo \"---exit $?---\")",
       "Bash(git check-ignore *)",
       "Bash(git add *)",
-      "Bash(git -C /Users/sbenja/Desktop/projects/cloudcart check-ignore services/main/tsconfig.build.tsbuildinfo)"
+      "Bash(git -C /Users/sbenja/Desktop/projects/cloudcart check-ignore services/main/tsconfig.build.tsbuildinfo)",
+      "Bash(git commit -m 'feat\\(main\\): NestJS service with PostgreSQL, MongoDB, Redis integration *)",
+      "Bash(git push *)",
+      "Bash(python3 -c \"import json,sys; print\\(json.load\\(sys.stdin\\)['version']\\)\")",
+      "Bash(python3 -c \"import json,sys; print\\('common:', json.load\\(sys.stdin\\)['version']\\)\")",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3001/api/docs)",
+      "Bash(curl -s -X POST http://localhost:3001/api/v1/users -H 'Content-Type: application/json' -d '{\"email\":\"john.doe@example.com\",\"firstName\":\"John\",\"lastName\":\"Doe\",\"role\":\"customer\"}')",
+      "Bash(curl -s \"http://localhost:3001/api/v1/users?page=1&limit=10\")",
+      "Bash(curl -s -X POST http://localhost:3001/api/v1/users -H 'Content-Type: application/json' -d '{\"email\":\"john.doe@example.com\",\"firstName\":\"Otro\",\"lastName\":\"User\"}' -w '\\\\nHTTP %{http_code}\\\\n')",
+      "Bash(curl -s -X POST http://localhost:3001/api/v1/users -H 'Content-Type: application/json' -d '{\"email\":\"no-es-email\",\"firstName\":\"X\",\"lastName\":\"Y\"}' -w '\\\\nHTTP %{http_code}\\\\n')",
+      "Bash(curl -s -X DELETE http://localhost:3001/api/v1/users/4128d096-a58e-4712-bd7d-caef8b373503 -w 'HTTP %{http_code}\\\\n')",
+      "Bash(curl -s http://localhost:3001/api/v1/users/4128d096-a58e-4712-bd7d-caef8b373503 -w '\\\\nHTTP %{http_code}\\\\n')",
+      "Bash(curl -s -o /dev/null -w \"NestJS HTTP %{http_code}\\\\n\" http://localhost:3001/api/v1/health)",
+      "Bash(git commit -m 'feat\\(users\\): CRUD module with PostgreSQL and hexagonal architecture *)"
     ]
   }
 }

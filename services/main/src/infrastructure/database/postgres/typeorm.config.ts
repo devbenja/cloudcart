@@ -10,7 +10,7 @@ export const buildTypeOrmConfig = (
     username: config.get<string>("POSTGRES_USER"),
     password: config.get<string>("POSTGRES_PASSWORD"),
     database: config.get<string>("POSTGRES_DB"),
-    entities: [__dirname + "/../../../modules/**/entities/*.entity{.ts,.js}"],
+    entities: [__dirname + "/../../../modules/**/*.entity{.ts,.js}"],
     synchronize: true,
     logging:
         config.get<string>("NODE_ENV") === "development"

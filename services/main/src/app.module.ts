@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { MongooseModule } from "@nestjs/mongoose";
 import { HealthModule } from "./modules/health/health.module";
+import { UsersModule } from "./modules/users/users.module";
 import { RedisModule } from "./infrastructure/database/redis/redis.module";
 import { buildTypeOrmConfig } from "./infrastructure/database/postgres/typeorm.config";
 import { buildMongooseConfig } from "./infrastructure/database/mongo/mongoose.config";
@@ -23,6 +24,7 @@ import { buildMongooseConfig } from "./infrastructure/database/mongo/mongoose.co
         }),
         RedisModule,
         HealthModule,
+        UsersModule,
     ],
 })
 
