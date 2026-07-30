@@ -69,7 +69,20 @@
       "Bash(curl -s -X DELETE http://localhost:3001/api/v1/users/4128d096-a58e-4712-bd7d-caef8b373503 -w 'HTTP %{http_code}\\\\n')",
       "Bash(curl -s http://localhost:3001/api/v1/users/4128d096-a58e-4712-bd7d-caef8b373503 -w '\\\\nHTTP %{http_code}\\\\n')",
       "Bash(curl -s -o /dev/null -w \"NestJS HTTP %{http_code}\\\\n\" http://localhost:3001/api/v1/health)",
-      "Bash(git commit -m 'feat\\(users\\): CRUD module with PostgreSQL and hexagonal architecture *)"
+      "Bash(git commit -m 'feat\\(users\\): CRUD module with PostgreSQL and hexagonal architecture *)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3001/api/v1/health)",
+      "Bash(curl -s -X POST http://localhost:3001/api/v1/products -H 'Content-Type: application/json' -d '{ *)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('Creado:', d['name'], '| id:', d['_id'], '| attrs:', d['attributes']\\)\")",
+      "Bash(curl -s \"http://localhost:3001/api/v1/products?category=electronics\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(f'Total: {d[\\\\\"total\\\\\"]}'\\); [print\\(' -', p['name']\\) for p in d['data']]\")",
+      "Bash(curl -s \"http://localhost:3001/api/v1/products?minPrice=50&maxPrice=100\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(f'Total: {d[\\\\\"total\\\\\"]}'\\); [print\\(f' - {p[\\\\\"name\\\\\"]}: \\\\${p[\\\\\"price\\\\\"]}'\\) for p in d['data']]\")",
+      "Bash(curl -s \"http://localhost:3001/api/v1/products?search=laptop\")",
+      "Bash(curl -s \"http://localhost:3001/api/v1/products\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(f'Total: {d[\\\\\"total\\\\\"]} | page {d[\\\\\"page\\\\\"]} | limit {d[\\\\\"limit\\\\\"]}'\\)\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(f'Actualizado: {d[\\\\\"name\\\\\"]} -> precio \\\\${d[\\\\\"price\\\\\"]}, stock {d[\\\\\"stock\\\\\"]}'\\)\")",
+      "Bash(curl -s \"http://localhost:3001/api/v1/products/6a6adb757e55d28878e8d999\" -w \"\\\\nHTTP %{http_code}\\\\n\")",
+      "Bash(git commit -m 'feat\\(catalog\\): product CRUD module with MongoDB and flexible attributes *)"
     ]
   }
 }
