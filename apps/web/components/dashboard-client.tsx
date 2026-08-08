@@ -255,6 +255,7 @@ export function DashboardClient() {
                                 <TableHead>Producto</TableHead>
                                 <TableHead>Categoría</TableHead>
                                 <TableHead>Precio</TableHead>
+                                <TableHead>Rating</TableHead>
                                 <TableHead>Stock</TableHead>
                                 <TableHead className="text-right">Acciones</TableHead>
                             </TableRow>
@@ -262,12 +263,54 @@ export function DashboardClient() {
                         <TableBody>
                             {products.map((p) => (
                                 <TableRow key={p._id}>
-                                    <TableCell className="font-medium">{p.name}</TableCell>
+                                    <TableCell className="min-w-0">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
+                                                {p.images?.[0] ? (
+                                                    // eslint-disable-next-line @next/next/no-img-element
+                                                    <img
+                                                        src={p.images[0]}
+                                                        alt={p.name}
+                                                        className="h-full w-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <span className="flex h-full w-full items-center justify-center text-lg">
+                                                        🛍️
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <span className="line-clamp-1 font-medium">
+                                                {p.name}
+                                            </span>
+                                        </div>
+                                    </TableCell>
                                     <TableCell>
                                         <Badge variant="secondary">{p.category}</Badge>
                                     </TableCell>
-                                    <TableCell>${p.price.toFixed(2)}</TableCell>
-                                    <TableCell>{p.stock}</TableCell>
+                                    <TableCell className="whitespace-nowrap">
+                                        <span className="font-semibold">
+                                            ${p.price.toFixed(2)}
+                                        </span>
+                                        {p.originalPrice && p.originalPrice > p.price && (
+                                            <span className="ml-1 text-xs text-muted-foreground line-through">
+                                                ${p.originalPrice.toFixed(2)}
+                                            </span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell>
+                                        {typeof p.rating === 'number' && p.rating > 0 ? (
+                                            <Badge variant="success">★ {p.rating.toFixed(1)}</Badge>
+                                        ) : (
+                                            <span className="text-muted-foreground">—</span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge
+                                            variant={p.stock <= 0 ? 'destructive' : 'secondary'}
+                                        >
+                                            {p.stock}
+                                        </Badge>
+                                    </TableCell>
                                     <TableCell className="text-right space-x-2">
                                         <Button variant="outline" size="sm" onClick={() => handleEdit(p)}>
                                             Editar

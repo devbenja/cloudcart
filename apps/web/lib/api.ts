@@ -6,6 +6,9 @@ export interface Product {
     name: string;
     description: string;
     price: number;
+    originalPrice?: number;
+    rating?: number;
+    reviewCount?: number;
     currency: string;
     category: string;
     tags: string[];
@@ -15,6 +18,21 @@ export interface Product {
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
+}
+
+/** Formatea un precio en USD. */
+export function formatPrice(value: number, currency = 'USD'): string {
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency,
+        minimumFractionDigits: 2,
+    }).format(value);
+}
+
+/** Porcentaje de descuento (entero) si hay precio original; 0 si no. */
+export function discountPercent(product: Pick<Product, 'price' | 'originalPrice'>): number {
+    if (!product.originalPrice || product.originalPrice <= product.price) return 0;
+    return Math.round((1 - product.price / product.originalPrice) * 100);
 }
 
 export interface Paginated<T> {
@@ -35,6 +53,9 @@ export interface CreateProductInput {
     name: string;
     description: string;
     price: number;
+    originalPrice?: number;
+    rating?: number;
+    reviewCount?: number;
     category: string;
     stock: number;
     currency?: string;

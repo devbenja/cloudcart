@@ -1,52 +1,54 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import { Geist, Geist_Mono } from 'next/font/google';
 import { SessionProvider } from '@/components/session-provider';
-import { SignInButton } from '@/components/sign-in';
-import { CartLink } from '@/components/cart-link';
+import { SiteHeader } from '@/components/site-header';
+import { SiteFooter } from '@/components/site-footer';
+import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import './globals.css';
 
+const geistSans = Geist({
+    variable: '--font-geist-sans',
+    subsets: ['latin'],
+});
+
+const geistMono = Geist_Mono({
+    variable: '--font-geist-mono',
+    subsets: ['latin'],
+});
+
 export const metadata: Metadata = {
     title: {
-        default: 'CloudCart',
+        default: 'CloudCart — Marketplace moderno',
         template: '%s | CloudCart',
     },
-    description: 'Tienda de demostración — Next.js + NestJS + Keycloak',
+    description:
+        'Marketplace de demostración: Next.js + NestJS + Keycloak + Kafka',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
     children,
 }: Readonly<{ children: React.ReactNode }>) {
+    let categories: string[] = [];
+    try {
+        categories = await api.getCategories();
+    } catch {
+        /* header sigue funcionando sin categorías */
+    }
+
     return (
         <html lang="es">
-            <body className={cn('min-h-screen bg-background font-sans antialiased')}>
+            <body
+                className={cn(
+                    'min-h-screen bg-background font-sans antialiased',
+                    geistSans.variable,
+                    geistMono.variable,
+                )}
+            >
                 <SessionProvider>
-                    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                        <div className="container flex h-14 items-center gap-6">
-                            <Link href="/" className="font-bold text-lg tracking-tight">
-                                Cloud<span className="text-primary">Cart</span>
-                            </Link>
-                            <nav className="flex items-center gap-4 text-sm text-muted-foreground">
-                                <Link href="/" className="hover:text-foreground">
-                                    Catálogo
-                                </Link>
-                                <Link href="/cart" className="hover:text-foreground">
-                                    Carrito
-                                </Link>
-                                <Link href="/orders" className="hover:text-foreground">
-                                    Mis órdenes
-                                </Link>
-                                <Link href="/dashboard" className="hover:text-foreground">
-                                    Dashboard
-                                </Link>
-                            </nav>
-                            <div className="ml-auto flex items-center gap-4">
-                                <CartLink />
-                                <SignInButton />
-                            </div>
-                        </div>
-                    </header>
-                    <main className="container py-6">{children}</main>
+                    <SiteHeader categories={categories} />
+                    <main className="container flex-1 py-6">{children}</main>
+                    <SiteFooter categories={categories} />
                 </SessionProvider>
             </body>
         </html>

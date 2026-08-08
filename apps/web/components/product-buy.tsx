@@ -2,15 +2,13 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useState } from 'react';
 import { api, type Product } from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ShoppingCart, Check } from 'lucide-react';
+import { ShoppingCart, Check, Zap, Minus, Plus } from 'lucide-react';
 
 export function ProductBuy({ product }: { product: Product }) {
-    const { data: session, status } = useSession();
+    const { data: session } = useSession();
     const router = useRouter();
     const [qty, setQty] = useState(1);
     const [loading, setLoading] = useState(false);
@@ -18,99 +16,121 @@ export function ProductBuy({ product }: { product: Product }) {
     const [error, setError] = useState<string | null>(null);
 
     const outOfStock = product.stock <= 0;
+    const maxQty = Math.min(product.stock, 99);
 
-    const handleAdd = async () => {
-        if (outOfStock) return;
+    /** Asegura sesión o redirige a login volviendo a esta página. */
+    const requireSession = (): string | null => {
+        if (session?.accessToken) return session.accessToken;
+        router.push(`/api/auth/signin?callbackUrl=/products/${product._id}`);
+        return null;
+    };
 
-        // Sin sesión → redirige al login (vuelve a esta página)
-        if (!session?.accessToken) {
-            router.push(`/api/auth/signin?callbackUrl=/products/${product._id}`);
-            return;
-        }
-
+    const add = async (): Promise<boolean> => {
+        const token = requireSession();
+        if (!token) return false;
         setLoading(true);
         setError(null);
         setAdded(false);
         try {
-            await api.addCartItem(session.accessToken, product._id, qty);
+            await api.addCartItem(token, product._id, qty);
             setAdded(true);
-            router.refresh();
             window.dispatchEvent(new Event('cart-updated'));
             setTimeout(() => setAdded(false), 2500);
+            return true;
         } catch (e) {
             setError(e instanceof Error ? e.message : 'Error al agregar al carrito');
+            return false;
         } finally {
             setLoading(false);
         }
     };
 
+    const handleAdd = async () => {
+        if (outOfStock) return;
+        await add();
+        router.refresh();
+    };
+
+    const handleBuyNow = async () => {
+        if (outOfStock) return;
+        const ok = await add();
+        if (ok) router.push('/cart');
+    };
+
     return (
-        <div className="space-y-3">
-            <div className="flex items-center gap-3">
-                <label htmlFor="qty" className="text-sm text-muted-foreground">
-                    Cantidad
-                </label>
-                <Input
-                    id="qty"
-                    type="number"
-                    min={1}
-                    max={Math.max(product.stock, 1)}
-                    value={qty}
-                    onChange={(e) =>
-                        setQty(Math.max(1, Number(e.target.value) || 1))
-                    }
-                    disabled={outOfStock}
-                    className="w-20"
-                />
-                {product.stock > 0 && (
-                    <span className="text-xs text-muted-foreground">
-                        (máx. {product.stock})
-                    </span>
-                )}
+        <div className="space-y-4">
+            {/* Selector de cantidad */}
+            <div>
+                <span className="mb-1.5 block text-sm text-muted-foreground">Cantidad</span>
+                <div className="inline-flex items-center rounded-lg border">
+                    <button
+                        type="button"
+                        aria-label="Disminuir cantidad"
+                        disabled={qty <= 1}
+                        onClick={() => setQty((q) => Math.max(1, q - 1))}
+                        className="flex h-10 w-10 items-center justify-center rounded-l-lg text-muted-foreground transition hover:bg-muted disabled:opacity-40"
+                    >
+                        <Minus className="h-4 w-4" />
+                    </button>
+                    <span className="w-12 text-center text-sm font-semibold">{qty}</span>
+                    <button
+                        type="button"
+                        aria-label="Aumentar cantidad"
+                        disabled={qty >= maxQty}
+                        onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
+                        className="flex h-10 w-10 items-center justify-center rounded-r-lg text-muted-foreground transition hover:bg-muted disabled:opacity-40"
+                    >
+                        <Plus className="h-4 w-4" />
+                    </button>
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                    {product.stock > 0 ? (
+                        <>
+                            <span className="font-medium text-emerald-600">
+                                {product.stock > 10 ? 'En stock' : `¡Solo quedan ${product.stock}!`}
+                            </span>{' '}
+                            — {product.stock} unidades disponibles
+                        </>
+                    ) : (
+                        <span className="font-medium text-destructive">Agotado</span>
+                    )}
+                </p>
             </div>
 
             {error && (
-                <div className="rounded-md bg-destructive/10 p-2.5 text-sm text-destructive">
+                <p className="rounded-md bg-destructive/10 p-2.5 text-sm text-destructive">
                     {error}
-                </div>
-            )}
-
-            <Button
-                className="w-full sm:w-auto"
-                onClick={handleAdd}
-                disabled={loading || outOfStock}
-            >
-                {added ? (
-                    <>
-                        <Check className="h-4 w-4" />
-                        ¡Agregado!
-                    </>
-                ) : (
-                    <>
-                        <ShoppingCart className="h-4 w-4" />
-                        {loading
-                            ? 'Agregando...'
-                            : outOfStock
-                              ? 'Agotado'
-                              : `Agregar al carrito — $${(product.price * qty).toFixed(2)}`}
-                    </>
-                )}
-            </Button>
-
-            {added && (
-                <Link
-                    href="/cart"
-                    className="inline-block text-sm text-primary hover:underline"
-                >
-                    Ver carrito →
-                </Link>
-            )}
-
-            {status === 'unauthenticated' && (
-                <p className="text-xs text-muted-foreground">
-                    Necesitás iniciar sesión para comprar.
                 </p>
             )}
+
+            <div className="space-y-2">
+                <Button
+                    onClick={handleAdd}
+                    disabled={outOfStock || loading}
+                    className="w-full gap-2"
+                    size="lg"
+                >
+                    {added ? (
+                        <>
+                            <Check className="h-5 w-5" /> ¡Agregado!
+                        </>
+                    ) : (
+                        <>
+                            <ShoppingCart className="h-5 w-5" /> Agregar al carrito
+                        </>
+                    )}
+                </Button>
+                <Button
+                    onClick={handleBuyNow}
+                    disabled={outOfStock || loading}
+                    variant="secondary"
+                    size="lg"
+                    className="w-full gap-2"
+                >
+                    <Zap className="h-5 w-5" />
+                    Comprar ahora
+                </Button>
+            </div>
         </div>
     );
 }

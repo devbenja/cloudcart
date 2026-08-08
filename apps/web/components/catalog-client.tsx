@@ -1,31 +1,38 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { api, type Paginated, type Product } from '@/lib/api';
 import { ProductCard } from '@/components/product-card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Search, X } from 'lucide-react';
 
 const RESULTS_PER_PAGE = 12;
 
-export function CatalogClient({ initial }: { initial: Paginated<Product> }) {
+interface Props {
+    initial: Paginated<Product>;
+    categories: string[];
+    initialSearch?: string;
+    initialCategory?: string;
+}
+
+export function CatalogClient({
+    initial,
+    categories,
+    initialSearch = '',
+    initialCategory = '',
+}: Props) {
+    const router = useRouter();
     const [products, setProducts] = useState<Product[]>(initial.data);
-    const [categories, setCategories] = useState<string[]>([]);
-    const [search, setSearch] = useState('');
-    const [category, setCategory] = useState('');
+    const [search, setSearch] = useState(initialSearch);
+    const [category, setCategory] = useState(initialCategory);
     const [total, setTotal] = useState(initial.total);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    // Carga las categorías reales desde la API (no hardcodeadas)
-    useEffect(() => {
-        api.getCategories()
-            .then(setCategories)
-            .catch(() => setCategories([]));
-    }, []);
 
     const load = useCallback(
         async (query: { search?: string; category?: string; page?: number }) => {
@@ -49,25 +56,35 @@ export function CatalogClient({ initial }: { initial: Paginated<Product> }) {
         [],
     );
 
-    // Búsqueda en vivo con debounce (300ms)
+    // Sincroniza la URL con los filtros (para compartir links y volver atrás)
+    const syncUrl = (s: string, c: string) => {
+        const params = new URLSearchParams();
+        if (s) params.set('search', s);
+        if (c) params.set('category', c);
+        const qs = params.toString();
+        router.replace(qs ? `/?${qs}` : '/', { scroll: false });
+    };
+
     const handleSearchChange = (value: string) => {
         setSearch(value);
         if (debounceRef.current) clearTimeout(debounceRef.current);
         debounceRef.current = setTimeout(() => {
             load({ search: value, category });
+            syncUrl(value, category);
         }, 300);
     };
 
-    // Filtro por categoría: aplica de inmediato
     const handleCategoryChange = (value: string) => {
         setCategory(value);
         load({ search, category: value });
+        syncUrl(search, value);
     };
 
     const resetFilters = () => {
         setSearch('');
         setCategory('');
         load({});
+        syncUrl('', '');
     };
 
     const hasFilters = search !== '' || category !== '';
@@ -81,7 +98,7 @@ export function CatalogClient({ initial }: { initial: Paginated<Product> }) {
     return (
         <div className="space-y-6">
             {/* Barra de filtros */}
-            <div className="flex flex-col gap-3 rounded-xl border bg-card p-4">
+            <div className="flex flex-col gap-3 rounded-2xl border bg-card p-4 shadow-sm">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                     <div className="relative flex-1">
                         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -95,7 +112,7 @@ export function CatalogClient({ initial }: { initial: Paginated<Product> }) {
                     <select
                         value={category}
                         onChange={(e) => handleCategoryChange(e.target.value)}
-                        className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                        className="h-9 rounded-lg border border-input bg-background px-3 text-sm"
                     >
                         <option value="">Todas las categorías</option>
                         {categories.map((c) => (
@@ -105,12 +122,7 @@ export function CatalogClient({ initial }: { initial: Paginated<Product> }) {
                         ))}
                     </select>
                     {hasFilters && (
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={resetFilters}
-                        >
+                        <Button type="button" variant="ghost" size="sm" onClick={resetFilters}>
                             <X className="h-4 w-4" />
                             Limpiar
                         </Button>
@@ -134,9 +146,20 @@ export function CatalogClient({ initial }: { initial: Paginated<Product> }) {
                 </div>
             )}
 
-            {products.length === 0 && !loading ? (
-                <div className="rounded-lg border border-dashed p-10 text-center text-muted-foreground">
-                    No hay productos que coincidan con tu búsqueda.
+            {loading ? (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {Array.from({ length: 6 }).map((_, i) => (
+                        <div key={i} className="space-y-3 rounded-2xl border p-4">
+                            <Skeleton className="h-40 w-full" />
+                            <Skeleton className="h-4 w-3/4" />
+                            <Skeleton className="h-4 w-1/2" />
+                        </div>
+                    ))}
+                </div>
+            ) : products.length === 0 ? (
+                <div className="rounded-2xl border border-dashed p-12 text-center text-muted-foreground">
+                    <p className="text-4xl">🔍</p>
+                    <p className="mt-2">No hay productos que coincidan con tu búsqueda.</p>
                     {hasFilters && (
                         <div className="mt-2">
                             <Button variant="link" onClick={resetFilters}>

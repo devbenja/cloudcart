@@ -33,12 +33,13 @@ export function CartLink() {
     return (
         <Link
             href="/cart"
-            className="relative flex items-center text-muted-foreground hover:text-foreground"
-            aria-label="Carrito"
+            className="relative flex h-10 items-center gap-2 rounded-lg px-2.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+            aria-label={`Carrito con ${count} producto(s)`}
         >
             <ShoppingCart className="h-5 w-5" />
+            <span className="hidden text-sm font-medium xl:block">Carrito</span>
             {count > 0 && (
-                <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-bold text-primary-foreground ring-2 ring-background">
                     {count}
                 </span>
             )}
