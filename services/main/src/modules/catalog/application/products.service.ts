@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { FilterQuery } from 'mongoose';
 import { ProductsRepository } from '../infrastructure/products.repository';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -60,5 +60,32 @@ export class ProductsService {
     if (!product) {
       throw new NotFoundException(`Producto ${id} no encontrado`);
     }
+  }
+
+  /**
+   * Descuenta stock de forma atómica. Lanza 400 si el stock no alcanza
+   * (la condición $gte en el update evita sobre-venta bajo concurrencia).
+   */
+  async decrementStock(id: string, qty: number): Promise<ProductDocument> {
+    const product = await this.productsRepository.decrementStock(id, qty);
+    if (!product) {
+      const existing = await this.productsRepository.findById(id);
+      if (!existing) {
+        throw new NotFoundException(`Producto ${id} no encontrado`);
+      }
+      throw new BadRequestException(
+        `Stock insuficiente para "${existing.name}": quedan ${existing.stock}`,
+      );
+    }
+    return product;
+  }
+
+  /** Devuelve stock (rollback de un descuento previo). */
+  async incrementStock(id: string, qty: number): Promise<ProductDocument> {
+    const product = await this.productsRepository.incrementStock(id, qty);
+    if (!product) {
+      throw new NotFoundException(`Producto ${id} no encontrado`);
+    }
+    return product;
   }
 }

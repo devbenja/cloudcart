@@ -43,6 +43,44 @@ export interface CreateProductInput {
     images?: string[];
 }
 
+/** Ítem del carrito (Redis). */
+export interface CartItem {
+    productId: string;
+    name: string;
+    price: number;
+    qty: number;
+    stock: number;
+    image?: string;
+}
+
+export interface Cart {
+    userId: string;
+    items: CartItem[];
+    updatedAt: number;
+}
+
+/** Ítem congelado en la orden (snapshot). */
+export interface OrderItem {
+    productId: string;
+    name: string;
+    price: number;
+    qty: number;
+    image?: string;
+}
+
+export type OrderStatus = 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
+
+export interface Order {
+    id: string;
+    userId: string;
+    status: OrderStatus;
+    items: OrderItem[];
+    total: string;
+    currency: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
 export class ApiError extends Error {
     status: number;
 
@@ -129,5 +167,53 @@ export const api = {
     /** Eliminar producto: requiere rol admin. */
     deleteProduct(id: string, accessToken: string): Promise<void> {
         return request<void>(`/products/${id}`, { method: 'DELETE' }, accessToken);
+    },
+
+    // ---- Carrito (requiere sesión) ----
+
+    getCart(accessToken: string): Promise<Cart> {
+        return request<Cart>('/cart', {}, accessToken);
+    },
+
+    addCartItem(accessToken: string, productId: string, qty: number): Promise<Cart> {
+        return request<Cart>(
+            '/cart/items',
+            { method: 'POST', body: JSON.stringify({ productId, qty }) },
+            accessToken,
+        );
+    },
+
+    updateCartItem(
+        accessToken: string,
+        productId: string,
+        qty: number,
+    ): Promise<Cart> {
+        return request<Cart>(
+            `/cart/items/${productId}`,
+            { method: 'PATCH', body: JSON.stringify({ qty }) },
+            accessToken,
+        );
+    },
+
+    removeCartItem(accessToken: string, productId: string): Promise<Cart> {
+        return request<Cart>(`/cart/items/${productId}`, { method: 'DELETE' }, accessToken);
+    },
+
+    clearCart(accessToken: string): Promise<void> {
+        return request<void>('/cart', { method: 'DELETE' }, accessToken);
+    },
+
+    // ---- Órdenes (requiere sesión) ----
+
+    createOrder(accessToken: string): Promise<Order> {
+        return request<Order>('/orders', { method: 'POST' }, accessToken);
+    },
+
+    getOrders(accessToken: string): Promise<Paginated<Order>> {
+        return request<Paginated<Order>>('/orders?limit=50', {}, accessToken);
+    },
+
+    getOrder(accessToken: string, id: string): Promise<Order> {
+        return request<Order>(`/orders/${id}`, {}, accessToken);
     },
 };

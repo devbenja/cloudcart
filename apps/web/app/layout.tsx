@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SessionProvider } from '@/components/session-provider';
 import { SignInButton } from '@/components/sign-in';
+import { CartLink } from '@/components/cart-link';
 import { cn } from '@/lib/utils';
 import './globals.css';
 
@@ -29,11 +30,18 @@ export default function RootLayout({
                                 <Link href="/" className="hover:text-foreground">
                                     Catálogo
                                 </Link>
+                                <Link href="/cart" className="hover:text-foreground">
+                                    Carrito
+                                </Link>
+                                <Link href="/orders" className="hover:text-foreground">
+                                    Mis órdenes
+                                </Link>
                                 <Link href="/dashboard" className="hover:text-foreground">
                                     Dashboard
                                 </Link>
                             </nav>
-                            <div className="ml-auto">
+                            <div className="ml-auto flex items-center gap-4">
+                                <CartLink />
                                 <SignInButton />
                             </div>
                         </div>

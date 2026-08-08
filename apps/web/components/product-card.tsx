@@ -1,6 +1,7 @@
 import type { Product } from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { AddToCartButton } from '@/components/add-to-cart-button';
 import { cn } from '@/lib/utils';
 
 export function ProductCard({ product }: { product: Product }) {
@@ -44,16 +45,19 @@ export function ProductCard({ product }: { product: Product }) {
                     </div>
                 )}
             </CardContent>
-            <CardFooter className="flex items-center justify-between">
-                <span className="text-lg font-semibold">{formattedPrice}</span>
-                <span
-                    className={cn(
-                        'text-xs',
-                        product.stock > 0 ? 'text-green-600' : 'text-destructive',
-                    )}
-                >
-                    {product.stock > 0 ? `${product.stock} en stock` : 'Sin stock'}
-                </span>
+            <CardFooter className="flex items-center justify-between gap-2">
+                <div className="flex flex-col">
+                    <span className="text-lg font-semibold">{formattedPrice}</span>
+                    <span
+                        className={cn(
+                            'text-xs',
+                            product.stock > 0 ? 'text-green-600' : 'text-destructive',
+                        )}
+                    >
+                        {product.stock > 0 ? `${product.stock} en stock` : 'Sin stock'}
+                    </span>
+                </div>
+                <AddToCartButton productId={product._id} />
             </CardFooter>
         </Card>
     );
