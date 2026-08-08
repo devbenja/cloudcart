@@ -11,13 +11,14 @@ import {
   HttpStatus,
   ParseUUIDPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { UsersService } from './application/users.service';
 import { CreateUserDto } from './application/dto/create-user.dto';
 import { UpdateUserDto } from './application/dto/update-user.dto';
 import { Roles } from '../../auth/decorators/roles.decorator';
 
 @ApiTags('users')
+@ApiBearerAuth()
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}

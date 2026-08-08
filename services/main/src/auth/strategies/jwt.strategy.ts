@@ -25,7 +25,7 @@ export interface AuthenticatedUser {
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(configService: ConfigService) {
     super({
-      // Extrae el token del header Authorization: Bearer <token>
+      // Extrae el token del header Authorization: Bearer <token> (estándar)
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       // Valida la firma del token contra las claves públicas de Keycloak (JWKS)

@@ -10,7 +10,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { ProductsService } from './application/products.service';
 import { CreateProductDto } from './application/dto/create-product.dto';
 import { UpdateProductDto } from './application/dto/update-product.dto';
@@ -24,6 +24,7 @@ export class CatalogController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Post()
+  @ApiBearerAuth()
   @Roles('admin')
   @ApiOperation({ summary: 'Crear un producto (solo admin)' })
   @ApiResponse({ status: 201, description: 'Producto creado' })
@@ -49,6 +50,7 @@ export class CatalogController {
   }
 
   @Patch(':id')
+  @ApiBearerAuth()
   @Roles('admin')
   @ApiOperation({ summary: 'Actualizar un producto (solo admin)' })
   update(@Param('id') id: string, @Body() dto: UpdateProductDto) {
@@ -57,6 +59,7 @@ export class CatalogController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBearerAuth()
   @Roles('admin')
   @ApiOperation({ summary: 'Eliminar un producto (solo admin)' })
   remove(@Param('id') id: string) {
