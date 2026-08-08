@@ -88,4 +88,9 @@ export class ProductsService {
     }
     return product;
   }
+
+  /** Categorías únicas del catálogo activo. */
+  getCategories(): Promise<string[]> {
+    return this.productsRepository.findCategories();
+  }
 }

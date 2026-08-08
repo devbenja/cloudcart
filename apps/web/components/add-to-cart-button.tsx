@@ -26,6 +26,7 @@ export function AddToCartButton({ productId }: { productId: string }) {
             await api.addCartItem(session.accessToken, productId, 1);
             setMessage('✓ Agregado al carrito');
             router.refresh();
+            window.dispatchEvent(new Event('cart-updated'));
         } catch (e) {
             setMessage(e instanceof Error ? e.message : 'Error al agregar');
         } finally {

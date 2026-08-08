@@ -41,6 +41,14 @@ export class CatalogController {
     return this.productsService.findAll(query);
   }
 
+  @Get('categories')
+  @Public()
+  @ApiOperation({ summary: 'Listar categorías activas del catálogo (público)' })
+  @ApiResponse({ status: 200, description: 'Array de categorías' })
+  categories() {
+    return this.productsService.getCategories();
+  }
+
   @Get(':id')
   @Public()
   @ApiOperation({ summary: 'Obtener un producto por ID (público)' })

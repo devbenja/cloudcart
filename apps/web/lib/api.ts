@@ -142,6 +142,16 @@ export const api = {
         return request<Paginated<Product>>(`/products${qs ? `?${qs}` : ''}`);
     },
 
+    /** Obtener un producto por ID (público). */
+    getProduct(id: string): Promise<Product> {
+        return request<Product>(`/products/${id}`);
+    },
+
+    /** Categorías activas del catálogo (público). */
+    getCategories(): Promise<string[]> {
+        return request<string[]>('/products/categories');
+    },
+
     /** Crear producto: requiere rol admin. */
     createProduct(data: CreateProductInput, accessToken: string): Promise<Product> {
         return request<Product>(

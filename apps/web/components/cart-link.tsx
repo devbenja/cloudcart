@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { ShoppingCart } from 'lucide-react';
 
@@ -10,21 +10,25 @@ export function CartLink() {
     const { data: session, status } = useSession();
     const [count, setCount] = useState(0);
 
-    useEffect(() => {
-        let active = true;
-        if (status === 'authenticated' && session?.accessToken) {
-            api.getCart(session.accessToken)
-                .then((c) => {
-                    if (active) setCount(c.items.reduce((acc, i) => acc + i.qty, 0));
-                })
-                .catch(() => {
-                    /* carrito puede no existir aún */
-                });
-        }
-        return () => {
-            active = false;
-        };
+    const refresh = useCallback(() => {
+        if (status !== 'authenticated' || !session?.accessToken) return;
+        api.getCart(session.accessToken)
+            .then((c) => {
+                setCount(c.items.reduce((acc, i) => acc + i.qty, 0));
+            })
+            .catch(() => {
+                /* carrito puede no existir aún */
+            });
     }, [status, session?.accessToken]);
+
+    useEffect(() => {
+        refresh();
+        // Se actualiza en vivo cuando un componente agrega/quita ítems
+        window.addEventListener('cart-updated', refresh);
+        return () => {
+            window.removeEventListener('cart-updated', refresh);
+        };
+    }, [refresh]);
 
     return (
         <Link

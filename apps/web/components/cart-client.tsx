@@ -36,11 +36,16 @@ export function CartClient() {
         if (accessToken) void load();
     }, [accessToken, load]);
 
+    const notifyCartUpdated = () => {
+        window.dispatchEvent(new Event('cart-updated'));
+    };
+
     const changeQty = async (productId: string, qty: number) => {
         if (!accessToken) return;
         try {
             setCart(await api.updateCartItem(accessToken, productId, qty));
             setError(null);
+            notifyCartUpdated();
         } catch (e) {
             setError(e instanceof Error ? e.message : 'Error');
         }
@@ -51,6 +56,7 @@ export function CartClient() {
         try {
             setCart(await api.removeCartItem(accessToken, productId));
             setError(null);
+            notifyCartUpdated();
         } catch (e) {
             setError(e instanceof Error ? e.message : 'Error');
         }
@@ -62,6 +68,7 @@ export function CartClient() {
             await api.clearCart(accessToken);
             setCart({ userId: '', items: [], updatedAt: Date.now() });
             setError(null);
+            notifyCartUpdated();
         } catch (e) {
             setError(e instanceof Error ? e.message : 'Error al vaciar');
         }
@@ -76,6 +83,7 @@ export function CartClient() {
             await api.createOrder(accessToken);
             setSuccess('✓ ¡Compra realizada! Tu pedido fue creado.');
             setCart({ userId: '', items: [], updatedAt: Date.now() });
+            notifyCartUpdated();
         } catch (e) {
             setError(e instanceof Error ? e.message : 'Error al procesar la compra');
         } finally {
@@ -131,11 +139,35 @@ export function CartClient() {
                                     key={item.productId}
                                     className="flex items-center justify-between gap-4 rounded-lg border p-3"
                                 >
-                                    <div className="min-w-0">
-                                        <p className="truncate font-medium">{item.name}</p>
-                                        <p className="text-sm text-muted-foreground">
-                                            ${item.price.toFixed(2)} c/u
-                                        </p>
+                                    <div className="flex min-w-0 items-center gap-3">
+                                        <Link
+                                            href={`/products/${item.productId}`}
+                                            className="block h-12 w-12 shrink-0 overflow-hidden rounded-md bg-muted"
+                                        >
+                                            {item.image ? (
+                                                // eslint-disable-next-line @next/next/no-img-element
+                                                <img
+                                                    src={item.image}
+                                                    alt={item.name}
+                                                    className="h-full w-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="flex h-full w-full items-center justify-center text-[10px] text-muted-foreground">
+                                                    img
+                                                </div>
+                                            )}
+                                        </Link>
+                                        <div className="min-w-0">
+                                            <Link
+                                                href={`/products/${item.productId}`}
+                                                className="truncate font-medium hover:text-primary hover:underline"
+                                            >
+                                                {item.name}
+                                            </Link>
+                                            <p className="text-sm text-muted-foreground">
+                                                ${item.price.toFixed(2)} c/u
+                                            </p>
+                                        </div>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <Input

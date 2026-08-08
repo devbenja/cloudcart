@@ -64,4 +64,16 @@ export class ProductsRepository {
       .findByIdAndUpdate(id, { $inc: { stock: qty } }, { new: true })
       .exec();
   }
+
+  /** Devuelve las categorías activas únicas del catálogo (ordenadas). */
+  async findCategories(): Promise<string[]> {
+    return this.productModel
+      .distinct('category', { isActive: true })
+      .exec()
+      .then((cats: string[]) =>
+        cats
+          .filter((c) => c && c.trim().length > 0)
+          .sort((a, b) => a.localeCompare(b)),
+      );
+  }
 }

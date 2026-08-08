@@ -38,12 +38,20 @@ export function DashboardClient() {
     const accessToken = session?.accessToken;
 
     const [products, setProducts] = useState<Product[]>([]);
+    const [categories, setCategories] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [form, setForm] = useState<FormState>(emptyForm);
     const [editing, setEditing] = useState<Product | null>(null);
     const [saving, setSaving] = useState(false);
     const [success, setSuccess] = useState<string | null>(null);
+
+    // Categorías existentes para sugerir en el formulario (evita typos)
+    useEffect(() => {
+        api.getCategories()
+            .then(setCategories)
+            .catch(() => setCategories([]));
+    }, []);
 
     const load = useCallback(async () => {
         if (!accessToken) return;
@@ -175,7 +183,18 @@ export function DashboardClient() {
                     </div>
                     <div className="space-y-1.5">
                         <label className="text-sm font-medium">Categoría</label>
-                        <Input value={form.category} onChange={handleField('category')} required />
+                        <Input
+                            value={form.category}
+                            onChange={handleField('category')}
+                            list="category-suggestions"
+                            placeholder="Ej: electronics"
+                            required
+                        />
+                        <datalist id="category-suggestions">
+                            {categories.map((c) => (
+                                <option key={c} value={c} />
+                            ))}
+                        </datalist>
                     </div>
                     <div className="space-y-1.5 sm:col-span-2">
                         <label className="text-sm font-medium">Descripción</label>

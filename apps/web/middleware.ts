@@ -24,6 +24,7 @@ export default withAuth(
             authorized: ({ token, req }) => {
                 const isPublic =
                     req.nextUrl.pathname === '/' ||
+                    req.nextUrl.pathname.startsWith('/products') ||
                     req.nextUrl.pathname.startsWith('/api/auth');
                 return isPublic || !!token;
             },
