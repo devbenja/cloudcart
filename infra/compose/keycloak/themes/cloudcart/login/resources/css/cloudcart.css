@@ -1,0 +1,342 @@
+/* ============================================================
+   CloudCart — Tema de login Keycloak
+   Paleta alineada con apps/web: blanco + rosa vibrante (rose-600
+   #e11d48 / fuchsia-500 #d946ef), bordes suaves, tipografía sans.
+   ============================================================ */
+
+:root {
+    --cc-primary: #e11d48;
+    --cc-primary-dark: #be123c;
+    --cc-accent: #d946ef;
+    --cc-foreground: #18181b;
+    --cc-muted: #71717a;
+    --cc-border: #e4e4e7;
+    --cc-bg: #faf7f9;
+    --cc-radius: 16px;
+    --cc-shadow: 0 20px 40px -18px rgba(225, 29, 72, 0.18), 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+body.cc-body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    color: var(--cc-foreground);
+    background: linear-gradient(180deg, #fff 0%, var(--cc-bg) 40%, #fdeef2 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Barra superior con gradiente rosa */
+.cc-accent-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, var(--cc-primary), var(--cc-accent));
+    z-index: 10;
+}
+
+.cc-main {
+    width: 100%;
+    max-width: 420px;
+    padding: 48px 16px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    flex: 1;
+}
+
+/* Tarjeta */
+.cc-card {
+    background: #fff;
+    border: 1px solid rgba(228, 228, 231, 0.8);
+    border-radius: var(--cc-radius);
+    box-shadow: var(--cc-shadow);
+    padding: 36px 32px 28px;
+}
+
+/* Logo */
+.cc-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.cc-logo-img { width: 44px; height: 44px; }
+.cc-logo-text {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--cc-foreground);
+}
+.cc-logo-text span {
+    background: linear-gradient(90deg, var(--cc-primary), var(--cc-accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+}
+
+/* Título */
+.cc-title {
+    margin: 0 0 20px;
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+    color: var(--cc-foreground);
+}
+
+/* Reintento con usuario */
+.cc-restart { margin-bottom: 16px; font-size: 14px; text-align: center; }
+.cc-restart #kc-attempted-username { font-weight: 600; display: block; margin-bottom: 8px; }
+.cc-restart #reset-login { color: var(--cc-primary); font-size: 13px; text-decoration: none; }
+.cc-restart #reset-login:hover { text-decoration: underline; }
+
+/* Alertas */
+.cc-alert {
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+.cc-alert-error   { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.cc-alert-success { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+.cc-alert-info    { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.cc-alert-warning { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+
+/* ============ Formularios (clases kc*/base) ============ */
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label,
+.pf-c-form__label,
+.pf-c-form__label-text,
+.cc-label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--cc-foreground);
+}
+
+/* Campos de texto */
+.pf-c-form-control,
+.cc-input,
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="tel"],
+input[type="number"],
+select,
+textarea {
+    width: 100%;
+    height: 44px;
+    padding: 0 14px;
+    font-size: 15px;
+    color: var(--cc-foreground);
+    background: #fff;
+    border: 1px solid var(--cc-border);
+    border-radius: 10px;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    box-sizing: border-box;
+}
+select { appearance: auto; }
+
+.pf-c-form-control:focus,
+.cc-input:focus,
+input:focus, select:focus, textarea:focus {
+    border-color: var(--cc-primary);
+    box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.15);
+}
+
+textarea { height: auto; min-height: 90px; padding: 10px 14px; }
+
+/* Helpers / mensajes de error de campo */
+.pf-c-form__helper-text,
+.pf-c-form__helper-text-after,
+.pf-c-form__helper-text-before,
+.cc-field-error {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    color: #dc2626;
+}
+.cc-field-hint {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--cc-muted);
+}
+
+/* Campo con botón de mostrar contraseña */
+.cc-input-group { position: relative; }
+.cc-input-group .cc-input { padding-right: 46px; }
+.cc-pw-toggle {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    font-size: 18px;
+    line-height: 1;
+    color: var(--cc-muted);
+}
+.cc-pw-toggle:hover { color: var(--cc-foreground); }
+.cc-icon-show::before { content: '👁️'; }
+.cc-icon-hide::before { content: '🙈'; }
+
+/* Botones */
+#kc-form-buttons { margin-top: 20px; }
+
+input[type="submit"],
+button[type="submit"],
+#kc-login,
+#kc-register,
+.pf-c-button.pf-m-primary,
+.cc-btn.cc-btn-primary {
+    width: 100%;
+    height: 46px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(90deg, var(--cc-primary), var(--cc-accent));
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: opacity 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease;
+    box-shadow: 0 8px 16px -8px rgba(225, 29, 72, 0.5);
+}
+input[type="submit"]:hover,
+button[type="submit"]:hover,
+.pf-c-button.pf-m-primary:hover {
+    opacity: 0.92;
+    box-shadow: 0 10px 20px -8px rgba(225, 29, 72, 0.6);
+}
+input[type="submit"]:active { transform: scale(0.99); }
+input[type="submit"]:disabled,
+button[type="submit"]:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Opciones del formulario (remember me / olvidé contraseña) */
+#kc-form-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+#kc-form-options .checkbox,
+.pf-c-check, .pf-c-radio {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--cc-muted);
+    font-size: 13px;
+    font-weight: 500;
+}
+#kc-form-options input[type="checkbox"],
+.pf-c-check__input, .pf-c-radio__input,
+.cc-check-input, .cc-radio-input,
+input[type="checkbox"], input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--cc-primary);
+}
+#kc-form-options a,
+#kc-form-options .pf-c-form__label a,
+#kc-form-options a[href] {
+    color: var(--cc-primary);
+    font-weight: 600;
+    text-decoration: none;
+}
+#kc-form-options a:hover { text-decoration: underline; }
+.cc-form-options-right { margin-left: auto; }
+
+/* Selector de idioma */
+.cc-locale { display: flex; gap: 8px; font-size: 12px; }
+.cc-locale a { color: var(--cc-muted); text-decoration: none; }
+.cc-locale .cc-locale-active { color: var(--cc-primary); font-weight: 700; }
+
+/* Sección "info" (registro, etc.) */
+.cc-info {
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid var(--cc-border);
+    text-align: center;
+    font-size: 14px;
+    color: var(--cc-muted);
+}
+.cc-info a { color: var(--cc-primary); font-weight: 600; text-decoration: none; }
+.cc-info a:hover { text-decoration: underline; }
+
+/* Divisor social */
+.cc-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 22px 0 14px;
+    color: var(--cc-muted);
+    font-size: 12px;
+}
+.cc-divider::before, .cc-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--cc-border);
+}
+.cc-social { display: flex; flex-direction: column; gap: 8px; }
+.kc-social-item { display: block; width: 100%; }
+.kc-social-provider-name { font-size: 14px; font-weight: 600; }
+
+/* Página de error */
+#kc-error-message { text-align: center; }
+#kc-error-message .cc-title { margin-bottom: 8px; }
+#kc-error-message #kc-error-details { font-size: 14px; color: var(--cc-muted); }
+
+/* Pie */
+.cc-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--cc-muted);
+    text-align: center;
+}
+.cc-footer-link {
+    color: var(--cc-primary);
+    font-weight: 600;
+    text-decoration: none;
+}
+.cc-footer-link:hover { text-decoration: underline; }
+.cc-footer-copy { font-size: 12px; }
+
+/* Register: grupos de campos dinámicos */
+.pf-c-form__group { margin-bottom: 16px; }
+.required { color: var(--cc-primary); }
+.subtitle, .form-horizontal .subtitle { font-size: 12px; color: var(--cc-muted); margin-bottom: 14px; }
+.form-horizontal .pf-c-form__label { margin-bottom: 6px; }
+
+/* Responsive */
+@media (max-width: 480px) {
+    .cc-main { padding: 36px 12px 24px; }
+    .cc-card { padding: 28px 20px 24px; }
+    .cc-logo-text { font-size: 22px; }
+}

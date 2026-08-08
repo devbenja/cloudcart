@@ -69,6 +69,7 @@ services:
       - "8180:8080"
     volumes:
       - ./keycloak/realm-config.json:/opt/keycloak/data/import/realm-cloudcart.json:ro
+      - ./keycloak/themes/cloudcart:/opt/keycloak/themes/cloudcart:ro
     depends_on:
       postgres:
         condition: service_healthy

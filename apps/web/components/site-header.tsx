@@ -29,7 +29,7 @@ export function SiteHeader({ categories }: { categories: string[] }) {
 
             {/* Nivel 2 — logo + búsqueda + acciones */}
             <div className="border-b border-border/70">
-                <div className="container flex h-16 items-center gap-3 sm:gap-6">
+                <div className="container flex h-16 items-center gap-2 sm:gap-6">
                     <MobileMenu categories={categories} />
 
                     <Link href="/" className="flex shrink-0 items-center gap-2">
@@ -41,9 +41,10 @@ export function SiteHeader({ categories }: { categories: string[] }) {
                         </span>
                     </Link>
 
-                    <SearchBar />
+                    {/* Búsqueda: en la fila principal a partir de sm */}
+                    <SearchBar className="hidden sm:flex" />
 
-                    <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+                    <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
                         <Link
                             href="/orders"
                             className="hidden flex-col items-start rounded-lg px-2 py-1 leading-tight hover:bg-muted md:flex"
@@ -57,6 +58,11 @@ export function SiteHeader({ categories }: { categories: string[] }) {
                         <SignInButton />
                         <CartLink />
                     </div>
+                </div>
+
+                {/* Búsqueda a ancho completo: solo en mobile */}
+                <div className="container pb-3 sm:hidden">
+                    <SearchBar />
                 </div>
             </div>
 

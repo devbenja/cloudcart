@@ -2,6 +2,7 @@
   "realm": "cloudcart",
   "enabled": true,
   "displayName": "CloudCart",
+  "loginTheme": "cloudcart",
   "accessTokenLifespan": 3600,
   "sslRequired": "none",
   "registrationAllowed": true,

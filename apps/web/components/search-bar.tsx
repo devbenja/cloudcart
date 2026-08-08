@@ -3,9 +3,16 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Search } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 /** Barra de búsqueda del header: navega a /?search=<query>. */
-export function SearchBar({ defaultValue = '' }: { defaultValue?: string }) {
+export function SearchBar({
+    defaultValue = '',
+    className = '',
+}: {
+    defaultValue?: string;
+    className?: string;
+}) {
     const router = useRouter();
     const [q, setQ] = useState(defaultValue);
 
@@ -16,7 +23,7 @@ export function SearchBar({ defaultValue = '' }: { defaultValue?: string }) {
     };
 
     return (
-        <form onSubmit={submit} className="relative flex-1">
+        <form onSubmit={submit} className={cn('relative min-w-0 flex-1', className)}>
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
                 value={q}
