@@ -14,6 +14,18 @@ export class Product {
   @Prop({ required: true, min: 0 })
   price: number;
 
+  /** Precio anterior (para mostrar descuento tachado). Opcional. */
+  @Prop({ min: 0 })
+  originalPrice?: number;
+
+  /** Puntaje promedio 0–5 (marketplace). */
+  @Prop({ min: 0, max: 5, default: 0 })
+  rating: number;
+
+  /** Cantidad de reseñas. */
+  @Prop({ min: 0, default: 0 })
+  reviewCount: number;
+
   @Prop({ required: true, default: 'USD' })
   currency: string;
 

@@ -7,6 +7,7 @@ import {
   IsObject,
   IsBoolean,
   Min,
+  Max,
   MinLength,
 } from 'class-validator';
 
@@ -25,6 +26,25 @@ export class CreateProductDto {
   @IsNumber()
   @Min(0)
   price: number;
+
+  @ApiPropertyOptional({ example: 99.99, description: 'Precio anterior (para mostrar descuento tachado)' })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  originalPrice?: number;
+
+  @ApiPropertyOptional({ example: 4.7, minimum: 0, maximum: 5, description: 'Puntaje promedio' })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(5)
+  rating?: number;
+
+  @ApiPropertyOptional({ example: 128, minimum: 0, description: 'Cantidad de reseñas' })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  reviewCount?: number;
 
   @ApiPropertyOptional({ example: 'USD', default: 'USD' })
   @IsOptional()
