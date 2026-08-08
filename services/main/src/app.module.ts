@@ -5,6 +5,7 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { HealthModule } from "./modules/health/health.module";
 import { UsersModule } from "./modules/users/users.module";
 import { CatalogModule } from "./modules/catalog/catalog.module";
+import { AuthModule } from "./auth/auth.module";
 import { RedisModule } from "./infrastructure/database/redis/redis.module";
 import { buildTypeOrmConfig } from "./infrastructure/database/postgres/typeorm.config";
 import { buildMongooseConfig } from "./infrastructure/database/mongo/mongoose.config";
@@ -27,6 +28,7 @@ import { buildMongooseConfig } from "./infrastructure/database/mongo/mongoose.co
         HealthModule,
         UsersModule,
         CatalogModule,
+        AuthModule,
     ],
 })
 
