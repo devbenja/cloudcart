@@ -7,6 +7,11 @@ import {
 import { OrdersRepository } from '../infrastructure/orders.repository';
 import { CartService } from '../../cart/application/cart.service';
 import { ProductsService } from '../../catalog/application/products.service';
+import { KafkaService } from '../../../infrastructure/kafka/kafka.service';
+import {
+    KAFKA_TOPICS,
+    KAFKA_EVENTS,
+} from '../../../infrastructure/kafka/kafka.constants';
 import { Order, OrderItem, OrderStatus, ORDER_TRANSITIONS } from '../domain/order.entity';
 
 export interface CreateOrderResult {
@@ -21,6 +26,7 @@ export class OrdersService {
         private readonly ordersRepository: OrdersRepository,
         private readonly cartService: CartService,
         private readonly productsService: ProductsService,
+        private readonly kafkaService: KafkaService,
     ) {}
 
     /**
@@ -76,6 +82,26 @@ export class OrdersService {
         // 3) Persistir orden + limpiar carrito
         const saved = await this.ordersRepository.save(order);
         await this.cartService.clear(userId);
+
+        // 4) Evento de dominio: avisa al resto del sistema que se creó una orden.
+        await this.kafkaService.publish(
+            KAFKA_TOPICS.ORDERS,
+            saved.id,
+            KAFKA_EVENTS.ORDER_CREATED,
+            {
+                id: saved.id,
+                userId: saved.userId,
+                status: saved.status,
+                total: saved.total,
+                currency: saved.currency,
+                items: saved.items.map((i) => ({
+                    productId: i.productId,
+                    name: i.name,
+                    price: i.price,
+                    qty: i.qty,
+                })),
+            },
+        );
 
         return saved;
     }
