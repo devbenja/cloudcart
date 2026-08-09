@@ -12,6 +12,15 @@ spec:
       labels:
         app: web
     spec:
+      # *.cloudcart.local solo resuelve en el host (via /etc/hosts). El pod
+      # necesita resolverlos para el issuer de Keycloak (server-side de
+      # next-auth); se mapean a la IP del serverlb de k3d (traefik LB).
+      hostAliases:
+        - ip: 172.18.0.3
+          hostnames:
+            - cloudcart.local
+            - api.cloudcart.local
+            - keycloak.cloudcart.local
       containers:
         - name: web
           image: cloudcart/web:dev
