@@ -1,6 +1,6 @@
 'use client';
 
-import { signIn, signOut, useSession } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 
 export function SignInButton() {
@@ -26,7 +26,15 @@ export function SignInButton() {
                         </span>
                     )}
                 </span>
-                <Button variant="outline" size="sm" onClick={() => signOut({ callbackUrl: '/' })}>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                        // /api/auth/logout borra la cookie local y cierra la
+                        // sesión SSO de Keycloak (end_session_endpoint).
+                        window.location.href = '/api/auth/logout';
+                    }}
+                >
                     Cerrar sesión
                 </Button>
             </div>

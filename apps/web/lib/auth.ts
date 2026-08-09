@@ -31,6 +31,8 @@ export const authOptions: NextAuthOptions = {
             if (account) {
                 // Primer login: el account trae el access_token de Keycloak
                 token.accessToken = account.access_token;
+                // id_token se usa para el logout SSO (id_token_hint)
+                token.idToken = account.id_token;
                 // Los roles viven en realm_access del access_token de Keycloak
                 token.roles = extractRoles(account.access_token);
                 token.id = profile?.sub ?? token.sub;
