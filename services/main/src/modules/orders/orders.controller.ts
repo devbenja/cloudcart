@@ -11,6 +11,7 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { OrdersService } from './application/orders.service';
 import { UpdateOrderStatusDto } from './application/dto/update-order-status.dto';
+import { UpdateShippingDto } from './application/dto/update-shipping.dto';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { AuthenticatedUser } from '../../auth/strategies/jwt.strategy';
@@ -52,6 +53,16 @@ export class OrdersController {
     ) {
         const isAdmin = user.roles.includes('admin');
         return this.ordersService.findOne(id, user.id, isAdmin);
+    }
+
+    @Patch(':id/shipping')
+    @ApiOperation({ summary: 'Completar dirección de envío (dueño de la orden)' })
+    updateShipping(
+        @Param('id', ParseUUIDPipe) id: string,
+        @CurrentUser() user: AuthenticatedUser,
+        @Body() dto: UpdateShippingDto,
+    ) {
+        return this.ordersService.updateShipping(id, user.id, dto);
     }
 
     @Patch(':id/status')

@@ -40,4 +40,9 @@ export class OrdersRepository {
         await this.repo.update(id, { status });
         return this.findById(id);
     }
+
+    /** Actualiza campos parciales de una orden (shipping, tracking, events). */
+    async update(id: string, data: Partial<Order>): Promise<void> {
+        await this.repo.update(id, data);
+    }
 }

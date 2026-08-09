@@ -161,16 +161,24 @@ export function OrdersClient() {
                                 </div>
 
                                 {/* Total */}
-                                <div className="flex items-center justify-between border-t px-5 py-3">
+                                <div className="flex flex-wrap items-center justify-between gap-3 border-t px-5 py-3">
                                     <span className="text-sm text-muted-foreground">
                                         {order.items.length} producto(s)
                                     </span>
-                                    <span className="font-bold">
-                                        Total:{' '}
-                                        <span className="text-primary">
-                                            {formatPrice(Number(order.total))}
+                                    <div className="flex items-center gap-3">
+                                        <Link
+                                            href={`/orders/${order.id}`}
+                                            className="text-sm font-semibold text-primary hover:underline"
+                                        >
+                                            Ver seguimiento →
+                                        </Link>
+                                        <span className="font-bold">
+                                            Total:{' '}
+                                            <span className="text-primary">
+                                                {formatPrice(Number(order.total))}
+                                            </span>
                                         </span>
-                                    </span>
+                                    </div>
                                 </div>
                             </div>
                         );

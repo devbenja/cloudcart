@@ -97,6 +97,20 @@ export interface OrderItem {
 
 export type OrderStatus = 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
 
+export interface OrderEvent {
+    status: OrderStatus;
+    at: string;
+    note?: string;
+}
+
+export interface ShippingAddress {
+    street: string;
+    city: string;
+    state: string;
+    zip: string;
+    country: string;
+}
+
 export interface Order {
     id: string;
     userId: string;
@@ -104,6 +118,20 @@ export interface Order {
     items: OrderItem[];
     total: string;
     currency: string;
+    shippingAddress?: ShippingAddress | null;
+    trackingNumber?: string | null;
+    carrier?: string | null;
+    events?: OrderEvent[];
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface Review {
+    id: string;
+    productId: string;
+    userId: string;
+    rating: number;
+    comment: string | null;
     createdAt: string;
     updatedAt: string;
 }
@@ -252,5 +280,56 @@ export const api = {
 
     getOrder(accessToken: string, id: string): Promise<Order> {
         return request<Order>(`/orders/${id}`, {}, accessToken);
+    },
+
+    /** Completar dirección de envío de una orden (dueño). */
+    updateShipping(
+        accessToken: string,
+        id: string,
+        data: { shippingAddress: ShippingAddress; carrier?: string; trackingNumber?: string },
+    ): Promise<Order> {
+        return request<Order>(
+            `/orders/${id}/shipping`,
+            { method: 'PATCH', body: JSON.stringify(data) },
+            accessToken,
+        );
+    },
+
+    // ---- Reseñas (requiere sesión para escribir) ----
+
+    /** Listar reseñas de un producto (público). */
+    getProductReviews(productId: string): Promise<Paginated<Review>> {
+        return request<Paginated<Review>>(`/reviews/product/${productId}`);
+    },
+
+    /** Crear reseña: requiere haber comprado el producto. */
+    createReview(
+        accessToken: string,
+        productId: string,
+        data: { rating: number; comment?: string },
+    ): Promise<Review> {
+        return request<Review>(
+            `/reviews/product/${productId}`,
+            { method: 'POST', body: JSON.stringify(data) },
+            accessToken,
+        );
+    },
+
+    /** Editar reseña propia (o admin). */
+    updateReview(
+        accessToken: string,
+        id: string,
+        data: { rating?: number; comment?: string },
+    ): Promise<Review> {
+        return request<Review>(
+            `/reviews/${id}`,
+            { method: 'PATCH', body: JSON.stringify(data) },
+            accessToken,
+        );
+    },
+
+    /** Eliminar reseña propia (o admin). */
+    deleteReview(accessToken: string, id: string): Promise<void> {
+        return request<void>(`/reviews/${id}`, { method: 'DELETE' }, accessToken);
     },
 };

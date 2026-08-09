@@ -7,6 +7,7 @@ import { UsersModule } from "./modules/users/users.module";
 import { CatalogModule } from "./modules/catalog/catalog.module";
 import { CartModule } from "./modules/cart/cart.module";
 import { OrdersModule } from "./modules/orders/orders.module";
+import { ReviewsModule } from "./modules/reviews/reviews.module";
 import { KafkaModule } from "./infrastructure/kafka/kafka.module";
 import { AuthModule } from "./auth/auth.module";
 import { RedisModule } from "./infrastructure/database/redis/redis.module";
@@ -34,6 +35,7 @@ import { buildMongooseConfig } from "./infrastructure/database/mongo/mongoose.co
         CatalogModule,
         CartModule,
         OrdersModule,
+        ReviewsModule,
         AuthModule,
     ],
 })

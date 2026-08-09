@@ -6,6 +6,7 @@ import { api, type Product, discountPercent, formatPrice } from '@/lib/api';
 import { ProductBuy } from '@/components/product-buy';
 import { ProductGallery } from '@/components/product-gallery';
 import { ProductCard } from '@/components/product-card';
+import { ProductReviews } from '@/components/product-reviews';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
@@ -185,6 +186,9 @@ export default async function ProductPage({ params }: Props) {
                     </div>
                 )}
             </div>
+
+            {/* Reseñas */}
+            <ProductReviews productId={product._id} />
 
             {/* Relacionados */}
             {related.length > 0 && (

@@ -13,6 +13,7 @@ import {
     KAFKA_EVENTS,
 } from '../../../infrastructure/kafka/kafka.constants';
 import { Order, OrderItem, OrderStatus, ORDER_TRANSITIONS } from '../domain/order.entity';
+import { UpdateShippingDto } from './dto/update-shipping.dto';
 
 export interface CreateOrderResult {
     order: Order;
@@ -79,11 +80,15 @@ export class OrdersService {
             currency: 'USD',
         });
 
-        // 3) Persistir orden + limpiar carrito
+        // 3) Registrar evento de creación + persistir orden
+        const now = new Date().toISOString();
+        order.events = [{ status: OrderStatus.PENDING, at: now, note: 'Orden creada' }];
         const saved = await this.ordersRepository.save(order);
+
+        // 4) Limpiar carrito
         await this.cartService.clear(userId);
 
-        // 4) Evento de dominio: avisa al resto del sistema que se creó una orden.
+        // 5) Evento de dominio: avisa al resto del sistema que se creó una orden.
         await this.kafkaService.publish(
             KAFKA_TOPICS.ORDERS,
             saved.id,
@@ -135,7 +140,11 @@ export class OrdersService {
      * Cambia el estado siguiendo la máquina de estados.
      * Validar: la orden existe, el usuario es admin, y la transición es válida.
      */
-    async updateStatus(id: string, newStatus: OrderStatus): Promise<Order> {
+    async updateStatus(
+        id: string,
+        newStatus: OrderStatus,
+        note?: string,
+    ): Promise<Order> {
         const order = await this.ordersRepository.findById(id);
         if (!order) {
             throw new NotFoundException(`Orden ${id} no encontrada`);
@@ -148,7 +157,37 @@ export class OrdersService {
             );
         }
 
-        const updated = await this.ordersRepository.updateStatus(id, newStatus);
-        return updated!;
+        // Registrar evento de timeline
+        const events = [
+            ...(order.events ?? []),
+            {
+                status: newStatus,
+                at: new Date().toISOString(),
+                note,
+            },
+        ];
+        await this.ordersRepository.update(id, { status: newStatus, events });
+
+        return this.ordersRepository.findById(id) as Promise<Order>;
+    }
+
+    async updateShipping(
+        orderId: string,
+        userId: string,
+        dto: UpdateShippingDto,
+    ): Promise<Order> {
+        const order = await this.ordersRepository.findById(orderId);
+        if (!order) {
+            throw new NotFoundException(`Orden ${orderId} no encontrada`);
+        }
+        if (order.userId !== userId) {
+            throw new ForbiddenException('No puedes modificar el envío de esta orden');
+        }
+        await this.ordersRepository.update(orderId, {
+            shippingAddress: dto.shippingAddress,
+            trackingNumber: dto.trackingNumber ?? null,
+            carrier: dto.carrier ?? null,
+        });
+        return this.ordersRepository.findById(orderId) as Promise<Order>;
     }
 }

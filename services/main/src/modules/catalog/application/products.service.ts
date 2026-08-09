@@ -93,4 +93,13 @@ export class ProductsService {
   getCategories(): Promise<string[]> {
     return this.productsRepository.findCategories();
   }
+
+  /** Actualiza rating y reviewCount del producto (usado por ReviewsService al crear/borrar reseñas). */
+  async updateRating(
+    id: string,
+    rating: number,
+    reviewCount: number,
+  ): Promise<void> {
+    await this.productsRepository.update(id, { rating, reviewCount });
+  }
 }
