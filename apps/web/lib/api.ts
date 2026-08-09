@@ -162,9 +162,15 @@ async function request<T>(
     accessToken?: string,
 ): Promise<T> {
     const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
         ...(options.headers as Record<string, string>),
     };
+
+    // Solo envía Content-Type: application/json cuando hay cuerpo.
+    // Fastify rechaza un POST con ese header pero body vacío
+    // ("Body cannot be empty when content-type is set to 'application/json'").
+    if (options.body) {
+        headers['Content-Type'] = 'application/json';
+    }
 
     // Si hay sesión, adjunta el bearer token (endpoints protegidos)
     if (accessToken) {
