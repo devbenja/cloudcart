@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { MapPin, Truck, CheckCircle2, Circle, Package } from 'lucide-react';
+import { MapPin, Truck, CheckCircle2, Circle, Package, CreditCard, Loader2 } from 'lucide-react';
 import { api, type Order, type OrderEvent, formatPrice } from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -42,8 +42,22 @@ export function OrderDetailClient({ order: initialOrder, accessToken }: Props) {
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [paying, setPaying] = useState(false);
+    const [payError, setPayError] = useState<string | null>(null);
 
     const status = STATUS_LABEL[order.status];
+
+    async function handlePayNow() {
+        setPaying(true);
+        setPayError(null);
+        try {
+            const { url } = await api.createCheckoutSession(accessToken, order.id);
+            window.location.href = url;
+        } catch (err) {
+            setPayError(err instanceof Error ? err.message : 'Error al iniciar el pago');
+            setPaying(false);
+        }
+    }
     const events: OrderEvent[] = order.events ?? [];
     const timeline = events.length > 0
         ? events
@@ -154,8 +168,48 @@ export function OrderDetailClient({ order: initialOrder, accessToken }: Props) {
                 </div>
             </div>
 
-            {/* Columna lateral: dirección de envío */}
-            <div className="rounded-lg border p-4 h-fit">
+            {/* Columna lateral: pago */}
+            <div className="space-y-6">
+                <div className="rounded-lg border p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                        <CreditCard className="h-4 w-4 text-primary" />
+                        <h2 className="font-semibold">Pago</h2>
+                    </div>
+                    {order.status === 'pending' ? (
+                        <div className="space-y-3">
+                            <p className="text-sm text-muted-foreground">
+                                Tu pedido está pendiente de pago. Completá el pago para
+                                que comience el procesamiento.
+                            </p>
+                            <Button onClick={handlePayNow} disabled={paying} className="w-full">
+                                {paying ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Redirigiendo...
+                                    </>
+                                ) : (
+                                    'Pagar ahora'
+                                )}
+                            </Button>
+                            {payError && <p className="text-xs text-destructive">{payError}</p>}
+                        </div>
+                    ) : (
+                        <div className="text-sm text-muted-foreground space-y-1">
+                            <p className="flex items-center gap-2">
+                                <span className={cn('inline-block h-2 w-2 rounded-full', status.dot)} />
+                                {status.label}
+                            </p>
+                            {order.paymentMethod && (
+                                <p>Método: {order.paymentMethod}</p>
+                            )}
+                            {order.paymentId && (
+                                <p className="break-all font-mono text-xs">ID: {order.paymentId}</p>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                {/* Dirección de envío */}
+                <div className="rounded-lg border p-4">
                 <div className="flex items-center gap-2 mb-4">
                     <MapPin className="h-4 w-4 text-primary" />
                     <h2 className="font-semibold">Dirección de envío</h2>
@@ -209,6 +263,7 @@ export function OrderDetailClient({ order: initialOrder, accessToken }: Props) {
                         {saving ? 'Guardando...' : 'Guardar dirección'}
                     </Button>
                 </form>
+                </div>
             </div>
         </div>
     );

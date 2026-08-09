@@ -122,8 +122,19 @@ export interface Order {
     trackingNumber?: string | null;
     carrier?: string | null;
     events?: OrderEvent[];
+    /** ID de la Checkout Session de Stripe. */
+    checkoutSessionId?: string | null;
+    /** ID del pago confirmado (PaymentIntent). */
+    paymentId?: string | null;
+    paymentMethod?: string | null;
     createdAt: string;
     updatedAt: string;
+}
+
+/** Resultado de crear una Checkout Session de Stripe. */
+export interface CheckoutSessionResult {
+    url: string;
+    sessionId: string;
 }
 
 export interface Review {
@@ -291,6 +302,17 @@ export const api = {
         return request<Order>(
             `/orders/${id}/shipping`,
             { method: 'PATCH', body: JSON.stringify(data) },
+            accessToken,
+        );
+    },
+
+    // ---- Pagos (Stripe, requiere sesión) ----
+
+    /** Crea una Checkout Session y devuelve la URL de Stripe para redirigir. */
+    createCheckoutSession(accessToken: string, orderId: string): Promise<CheckoutSessionResult> {
+        return request<CheckoutSessionResult>(
+            '/payments/checkout-session',
+            { method: 'POST', body: JSON.stringify({ orderId }) },
             accessToken,
         );
     },

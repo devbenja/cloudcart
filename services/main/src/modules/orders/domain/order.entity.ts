@@ -80,6 +80,20 @@ export class Order {
     @Column({ type: 'jsonb', default: '[]' })
     events: { status: string; at: string; note?: string }[];
 
+    // ── Pagos (Stripe) ────────────────────────────────
+
+    /** ID de la Checkout Session de Stripe. */
+    @Column({ type: 'varchar', length: 100, nullable: true })
+    checkoutSessionId: string | null;
+
+    /** ID del pago en el proveedor (PaymentIntent / charge). */
+    @Column({ type: 'varchar', length: 100, nullable: true })
+    paymentId: string | null;
+
+    /** Método de pago usado (card, etc.). */
+    @Column({ type: 'varchar', length: 50, nullable: true })
+    paymentMethod: string | null;
+
     @CreateDateColumn({ type: 'timestamptz' })
     createdAt: Date;
 

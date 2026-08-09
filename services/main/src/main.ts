@@ -7,6 +7,7 @@ import {
 import { ValidationPipe } from "@nestjs/common";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { ConfigService } from "@nestjs/config";
+import fastifyRawBody from 'fastify-raw-body';
 import { AppModule } from "./app.module";
 
 async function bootstrap() {
@@ -14,6 +15,9 @@ async function bootstrap() {
         AppModule,
         new FastifyAdapter({ logger: true }),
     );
+
+    // Expone req.rawBody para verificar la firma del webhook de Stripe.
+    await app.register(fastifyRawBody);
 
     const configService = app.get(ConfigService);
     const port = configService.get<number>("PORT") || 3001;

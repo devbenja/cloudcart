@@ -171,6 +171,73 @@ export class OrdersService {
         return this.ordersRepository.findById(id) as Promise<Order>;
     }
 
+    /**
+     * Marca una orden como pagada (lo invoca el webhook de Stripe tras
+     * confirmar el pago). Valida la transición pending -> paid, guarda los
+     * datos del pago y publica el evento de dominio order.status.changed.
+     */
+    async markAsPaid(
+        orderId: string,
+        payment: { paymentId: string; paymentMethod?: string },
+    ): Promise<Order> {
+        const order = await this.ordersRepository.findById(orderId);
+        if (!order) {
+            throw new NotFoundException(`Orden ${orderId} no encontrada`);
+        }
+
+        if (order.status === OrderStatus.PAID) {
+            // Idempotente: el webhook puede repetirse; no lanzar.
+            return order;
+        }
+
+        const allowed = ORDER_TRANSITIONS[order.status] ?? [];
+        if (!allowed.includes(OrderStatus.PAID)) {
+            throw new BadRequestException(
+                `No se puede marcar como pagada una orden en estado ${order.status}`,
+            );
+        }
+
+        const events = [
+            ...(order.events ?? []),
+            {
+                status: OrderStatus.PAID,
+                at: new Date().toISOString(),
+                note: 'Pago confirmado (Stripe)',
+            },
+        ];
+        await this.ordersRepository.update(orderId, {
+            status: OrderStatus.PAID,
+            events,
+            paymentId: payment.paymentId,
+            paymentMethod: payment.paymentMethod ?? null,
+        });
+
+        const saved = (await this.ordersRepository.findById(orderId)) as Order;
+
+        await this.kafkaService.publish(
+            KAFKA_TOPICS.ORDERS,
+            saved.id,
+            KAFKA_EVENTS.ORDER_STATUS_CHANGED,
+            {
+                id: saved.id,
+                userId: saved.userId,
+                from: order.status,
+                to: OrderStatus.PAID,
+                paymentId: saved.paymentId,
+            },
+        );
+
+        return saved;
+    }
+
+    /** Asocia una Checkout Session de Stripe a la orden (usado al crear el pago). */
+    async setCheckoutSession(
+        orderId: string,
+        checkoutSessionId: string,
+    ): Promise<void> {
+        await this.ordersRepository.update(orderId, { checkoutSessionId });
+    }
+
     async updateShipping(
         orderId: string,
         userId: string,

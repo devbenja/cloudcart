@@ -88,13 +88,13 @@ export function CartClient() {
         setError(null);
         setSuccess(null);
         try {
-            await api.createOrder(accessToken);
-            setSuccess('✓ ¡Compra realizada! Tu pedido fue creado.');
-            setCart({ userId: '', items: [], updatedAt: Date.now() });
-            notifyCartUpdated();
+            // 1) Crear la orden (descunta stock, congela snapshot, limpia carrito)
+            const order = await api.createOrder(accessToken);
+            // 2) Crear la Checkout Session de Stripe y redirigir al pago
+            const { url } = await api.createCheckoutSession(accessToken, order.id);
+            window.location.href = url;
         } catch (e) {
             setError(e instanceof Error ? e.message : 'Error al procesar la compra');
-        } finally {
             setCheckingOut(false);
         }
     };
