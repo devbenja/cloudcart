@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: main-seed
+  annotations:
+    # Aplica una sola vez (helm-less): borrar con `kubectl delete job main-seed` para re-ejecutar.
+    cloudcart.io/purpose: "Siembra el catálogo demo en MongoDB"
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 3600
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: seed
+          image: cloudcart/main:dev
+          imagePullPolicy: IfNotPresent
+          command: ["node", "dist/seeds/catalog.seed.js"]
+          envFrom:
+            - configMapRef:
+                name: env-config
+          env:
+            - name: MONGODB_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: env-config
+                  key: MONGODB_URI

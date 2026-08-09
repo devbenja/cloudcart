@@ -13,8 +13,14 @@
   "bruteForceProtected": true,
   "roles": {
     "realm": [
-      { "name": "admin", "description": "Administrador de la tienda" },
-      { "name": "customer", "description": "Cliente de la tienda" }
+      {
+        "name": "admin",
+        "description": "Administrador de la tienda"
+      },
+      {
+        "name": "customer",
+        "description": "Cliente de la tienda"
+      }
     ]
   },
   "users": [
@@ -32,7 +38,9 @@
           "temporary": false
         }
       ],
-      "realmRoles": ["admin"]
+      "realmRoles": [
+        "admin"
+      ]
     },
     {
       "username": "customer-user",
@@ -48,10 +56,12 @@
           "temporary": false
         }
       ],
-      "realmRoles": ["customer"]
+      "realmRoles": [
+        "customer"
+      ]
     }
   ],
-"clients": [
+  "clients": [
     {
       "clientId": "cloudcart-frontend",
       "enabled": true,
@@ -60,9 +70,12 @@
       "standardFlowEnabled": true,
       "redirectUris": [
         "http://localhost:3000/*",
-        "http://localhost:3001/*"
+        "http://localhost:3001/*",
+        "http://cloudcart.local/*"
       ],
-      "webOrigins": ["+"],
+      "webOrigins": [
+        "+"
+      ],
       "protocol": "openid-connect"
     },
     {
@@ -73,8 +86,12 @@
       "directAccessGrantsEnabled": true,
       "standardFlowEnabled": true,
       "serviceAccountsEnabled": true,
-      "redirectUris": ["*"],
-      "webOrigins": ["+"],
+      "redirectUris": [
+        "*"
+      ],
+      "webOrigins": [
+        "+"
+      ],
       "protocol": "openid-connect"
     }
   ]

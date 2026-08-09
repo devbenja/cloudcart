@@ -1,0 +1,46 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: cloudcart
+
+resources:
+  - namespace.yaml
+  - postgres
+  - mongo
+  - redis
+  - kafka
+  - keycloak
+  - main
+  - web
+
+secretGenerator:
+  - name: app-secrets
+    literals:
+      - POSTGRES_USER=cloudcart
+      - POSTGRES_PASSWORD=cloudcart_dev_password
+      - POSTGRES_DB=cloudcart
+      - MONGO_USER=cloudcart
+      - MONGO_PASSWORD=cloudcart_dev_password
+      - MONGO_DB=cloudcart
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KEYCLOAK_CLIENT_SECRET=backend-secret-change-in-production
+
+configMapGenerator:
+  - name: env-config
+    literals:
+      - CORS_ORIGIN=http://cloudcart.local
+      - NEXT_PUBLIC_API_URL=http://api.cloudcart.local/api/v1
+      - INTERNAL_API_URL=http://main:3001/api/v1
+      - NEXTAUTH_URL=http://cloudcart.local
+      - KEYCLOAK_ISSUER=http://keycloak.cloudcart.local/realms/cloudcart
+      - KEYCLOAK_CLIENT_ID=cloudcart-frontend
+      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=cloudcart
+      - KEYCLOAK_BACKEND_CLIENT_ID=cloudcart-backend
+      - KAFKA_BROKERS=kafka:9092
+      - MONGODB_URI=mongodb://cloudcart:cloudcart_dev_password@mongo:27017/cloudcart?authSource=admin
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379

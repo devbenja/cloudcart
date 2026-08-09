@@ -1,4 +1,10 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
+// INTERNAL_API_URL (no-NEXT_PUBLIC, solo disponible en el server) se usa para
+// que los server components fetchen directo al Service `main` en Kubernetes en
+// vez de rebotar por el ingress. En el cliente (y en dev local) se usa la URL pública.
+const API_URL =
+    process.env.INTERNAL_API_URL ??
+    process.env.NEXT_PUBLIC_API_URL ??
+    'http://localhost:3001/api/v1';
 
 /** Producto tal como lo devuelve la API del backend. */
 export interface Product {

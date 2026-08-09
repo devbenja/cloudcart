@@ -1,0 +1,33 @@
+# Dependencias
+**/node_modules
+.pnpm-store
+
+# Build outputs
+**/dist
+**/build
+**/.next
+**/.swc
+
+# Cache de TS
+**/*.tsbuildinfo
+
+# Entorno
+**/.env
+**/.env.*
+!.env.example
+
+# Git / IDE / OS
+.git
+.github
+.claude
+.vscode
+.idea
+.DS_Store
+
+# Logs
+**/*.log
+
+# Infra (no va en la imagen de las apps)
+infra
+docs
+scripts
