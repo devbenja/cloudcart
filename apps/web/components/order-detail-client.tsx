@@ -223,6 +223,7 @@ export function OrderDetailClient({ order: initialOrder, accessToken }: Props) {
                     </div>
                 ) : null}
 
+                {(!order.shippingAddress || saved) && (
                 <form onSubmit={handleSaveShipping} className="space-y-3">
                     <Input
                         placeholder="Calle y número"
@@ -263,6 +264,7 @@ export function OrderDetailClient({ order: initialOrder, accessToken }: Props) {
                         {saving ? 'Guardando...' : 'Guardar dirección'}
                     </Button>
                 </form>
+                )}
                 </div>
             </div>
         </div>

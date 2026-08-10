@@ -12,6 +12,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagg
 import { OrdersService } from './application/orders.service';
 import { UpdateOrderStatusDto } from './application/dto/update-order-status.dto';
 import { UpdateShippingDto } from './application/dto/update-shipping.dto';
+import { CreateOrderDto } from './application/dto/create-order.dto';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { AuthenticatedUser } from '../../auth/strategies/jwt.strategy';
@@ -26,8 +27,11 @@ export class OrdersController {
     @ApiOperation({ summary: 'Crear una orden a partir del carrito (checkout)' })
     @ApiResponse({ status: 201, description: 'Orden creada' })
     @ApiResponse({ status: 400, description: 'Carrito vacío o stock insuficiente' })
-    create(@CurrentUser() user: AuthenticatedUser) {
-        return this.ordersService.create(user.id);
+    create(
+        @CurrentUser() user: AuthenticatedUser,
+        @Body() dto?: CreateOrderDto,
+    ) {
+        return this.ordersService.create(user.id, dto?.shippingAddress);
     }
 
     @Get()

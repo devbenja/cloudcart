@@ -14,6 +14,9 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { OrdersAdmin } from './admin/orders-admin';
+import { UsersAdmin } from './admin/users-admin';
 
 interface FormState {
     name: string;
@@ -45,6 +48,7 @@ export function DashboardClient() {
     const [editing, setEditing] = useState<Product | null>(null);
     const [saving, setSaving] = useState(false);
     const [success, setSuccess] = useState<string | null>(null);
+    const [tab, setTab] = useState<'products' | 'orders' | 'users'>('products');
 
     // Categorías existentes para sugerir en el formulario (evita typos)
     useEffect(() => {
@@ -154,12 +158,39 @@ export function DashboardClient() {
                 </p>
             </div>
 
-            {error && (
-                <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
-            )}
-            {success && (
-                <div className="rounded-md bg-green-600/10 p-3 text-sm text-green-700">{success}</div>
-            )}
+            {/* Navegación por tabs */}
+            <div className="flex flex-wrap gap-2 border-b pb-3">
+                {(
+                    [
+                        { id: 'products', label: 'Productos' },
+                        { id: 'orders', label: 'Pedidos' },
+                        { id: 'users', label: 'Usuarios' },
+                    ] as const
+                ).map((t) => (
+                    <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => setTab(t.id)}
+                        className={cn(
+                            'rounded-md px-4 py-2 text-sm font-medium transition-colors',
+                            tab === t.id
+                                ? 'bg-primary text-primary-foreground'
+                                : 'text-muted-foreground hover:bg-muted',
+                        )}
+                    >
+                        {t.label}
+                    </button>
+                ))}
+            </div>
+
+            {tab === 'products' && (
+                <>
+                    {error && (
+                        <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
+                    )}
+                    {success && (
+                        <div className="rounded-md bg-green-600/10 p-3 text-sm text-green-700">{success}</div>
+                    )}
 
             {/* Formulario crear/editar */}
             <form
@@ -329,6 +360,10 @@ export function DashboardClient() {
                     </Table>
                 )}
             </div>
+                </>
+            )}
+            {tab === 'orders' && <OrdersAdmin />}
+            {tab === 'users' && <UsersAdmin />}
         </div>
     );
 }

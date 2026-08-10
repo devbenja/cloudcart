@@ -97,6 +97,15 @@ export interface OrderItem {
 
 export type OrderStatus = 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
 
+/** Espejo de ORDER_TRANSITIONS del backend: estados alcanzables desde cada uno. */
+export const ORDER_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
+    pending: ['paid', 'cancelled'],
+    paid: ['shipped', 'cancelled'],
+    shipped: ['delivered'],
+    delivered: [],
+    cancelled: [],
+};
+
 export interface OrderEvent {
     status: OrderStatus;
     at: string;
@@ -145,6 +154,29 @@ export interface Review {
     comment: string | null;
     createdAt: string;
     updatedAt: string;
+}
+
+export type UserRole = 'admin' | 'customer';
+
+/** Usuario de la tabla local (Postgres), sincronizado manualmente por admin. */
+export interface User {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    keycloakId: string | null;
+    role: UserRole;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface CreateUserInput {
+    email: string;
+    firstName: string;
+    lastName: string;
+    role?: UserRole;
+    keycloakId?: string;
 }
 
 export class ApiError extends Error {
@@ -287,8 +319,18 @@ export const api = {
 
     // ---- Órdenes (requiere sesión) ----
 
-    createOrder(accessToken: string): Promise<Order> {
-        return request<Order>('/orders', { method: 'POST' }, accessToken);
+    /**
+     * Crea la orden (checkout). La dirección de envío es opcional y se pide
+     * ANTES del pago, por eso viaja en el body de creación.
+     */
+    createOrder(
+        accessToken: string,
+        data?: { shippingAddress: ShippingAddress },
+    ): Promise<Order> {
+        const options: RequestInit = data
+            ? { method: 'POST', body: JSON.stringify(data) }
+            : { method: 'POST' };
+        return request<Order>('/orders', options, accessToken);
     },
 
     getOrders(accessToken: string): Promise<Paginated<Order>> {
@@ -308,6 +350,15 @@ export const api = {
         return request<Order>(
             `/orders/${id}/shipping`,
             { method: 'PATCH', body: JSON.stringify(data) },
+            accessToken,
+        );
+    },
+
+    /** Cambiar estado de una orden (máquina de estados, solo admin). */
+    updateOrderStatus(accessToken: string, id: string, status: OrderStatus): Promise<Order> {
+        return request<Order>(
+            `/orders/${id}/status`,
+            { method: 'PATCH', body: JSON.stringify({ status }) },
             accessToken,
         );
     },
@@ -359,5 +410,39 @@ export const api = {
     /** Eliminar reseña propia (o admin). */
     deleteReview(accessToken: string, id: string): Promise<void> {
         return request<void>(`/reviews/${id}`, { method: 'DELETE' }, accessToken);
+    },
+
+    // ---- Usuarios (solo admin) ----
+
+    getUsers(accessToken: string, page = 1, limit = 50): Promise<Paginated<User>> {
+        return request<Paginated<User>>(
+            `/users?page=${page}&limit=${limit}`,
+            {},
+            accessToken,
+        );
+    },
+
+    createUser(accessToken: string, data: CreateUserInput): Promise<User> {
+        return request<User>(
+            '/users',
+            { method: 'POST', body: JSON.stringify(data) },
+            accessToken,
+        );
+    },
+
+    updateUser(
+        accessToken: string,
+        id: string,
+        data: Partial<CreateUserInput> & { isActive?: boolean },
+    ): Promise<User> {
+        return request<User>(
+            `/users/${id}`,
+            { method: 'PATCH', body: JSON.stringify(data) },
+            accessToken,
+        );
+    },
+
+    deleteUser(accessToken: string, id: string): Promise<void> {
+        return request<void>(`/users/${id}`, { method: 'DELETE' }, accessToken);
     },
 };

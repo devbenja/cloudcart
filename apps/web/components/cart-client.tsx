@@ -3,10 +3,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { api, type Cart, formatPrice } from '@/lib/api';
+import { api, type Cart, type ShippingAddress, formatPrice } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Input } from '@/components/ui/input';
 import {
     ShoppingCart,
     Trash2,
@@ -15,6 +16,7 @@ import {
     ArrowRight,
     Truck,
     Loader2,
+    MapPin,
 } from 'lucide-react';
 
 const FREE_SHIPPING_THRESHOLD = 50;
@@ -28,6 +30,14 @@ export function CartClient() {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
     const [checkingOut, setCheckingOut] = useState(false);
+
+    // Dirección de envío: se pide ANTES del pago
+    const [street, setStreet] = useState('');
+    const [city, setCity] = useState('');
+    const [state, setState] = useState('');
+    const [zip, setZip] = useState('');
+    const [country, setCountry] = useState('');
+    const [shippingError, setShippingError] = useState<string | null>(null);
 
     const load = useCallback(async () => {
         if (!accessToken) return;
@@ -84,12 +94,26 @@ export function CartClient() {
 
     const handleCheckout = async () => {
         if (!accessToken || !cart || cart.items.length === 0) return;
+
+        const address: ShippingAddress = { street, city, state, zip, country };
+        const missing = (Object.entries(address) as [keyof ShippingAddress, string][])
+            .filter(([, v]) => !v.trim())
+            .map(([k]) => k);
+        if (missing.length > 0) {
+            setShippingError(
+                'Completá la dirección de envío para continuar: ' +
+                    missing.join(', '),
+            );
+            return;
+        }
+
         setCheckingOut(true);
         setError(null);
+        setShippingError(null);
         setSuccess(null);
         try {
-            // 1) Crear la orden (descunta stock, congela snapshot, limpia carrito)
-            const order = await api.createOrder(accessToken);
+            // 1) Crear la orden con la dirección (descuenta stock, snapshot, limpia carrito)
+            const order = await api.createOrder(accessToken, { shippingAddress: address });
             // 2) Crear la Checkout Session de Stripe y redirigir al pago
             const { url } = await api.createCheckoutSession(accessToken, order.id);
             window.location.href = url;
@@ -289,6 +313,53 @@ export function CartClient() {
                             envío gratis
                         </p>
                     )}
+
+                    {/* Dirección de envío — se pide ANTES del pago */}
+                    <div className="mt-4 rounded-xl border bg-muted/30 p-4">
+                        <h3 className="flex items-center gap-1.5 text-sm font-semibold">
+                            <MapPin className="h-4 w-4 text-primary" />
+                            Dirección de envío
+                        </h3>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                            Necesitamos la dirección para enviarte el pedido.
+                        </p>
+                        <div className="mt-3 space-y-2">
+                            <Input
+                                placeholder="Calle y número"
+                                value={street}
+                                onChange={(e) => setStreet(e.target.value)}
+                            />
+                            <div className="grid grid-cols-2 gap-2">
+                                <Input
+                                    placeholder="Ciudad"
+                                    value={city}
+                                    onChange={(e) => setCity(e.target.value)}
+                                />
+                                <Input
+                                    placeholder="Provincia"
+                                    value={state}
+                                    onChange={(e) => setState(e.target.value)}
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                                <Input
+                                    placeholder="Código postal"
+                                    value={zip}
+                                    onChange={(e) => setZip(e.target.value)}
+                                />
+                                <Input
+                                    placeholder="País"
+                                    value={country}
+                                    onChange={(e) => setCountry(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                        {shippingError && (
+                            <p className="mt-2 rounded-lg bg-destructive/10 p-2 text-xs text-destructive">
+                                {shippingError}
+                            </p>
+                        )}
+                    </div>
 
                     <Button
                         onClick={handleCheckout}

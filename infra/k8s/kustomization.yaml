@@ -30,6 +30,7 @@ configMapGenerator:
   - name: env-config
     literals:
       - CORS_ORIGIN=http://cloudcart.local
+      - FRONTEND_URL=http://cloudcart.local
       - NEXT_PUBLIC_API_URL=http://api.cloudcart.local/api/v1
       - INTERNAL_API_URL=http://main:3001/api/v1
       - NEXTAUTH_URL=http://cloudcart.local

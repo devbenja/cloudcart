@@ -12,7 +12,13 @@ import {
     KAFKA_TOPICS,
     KAFKA_EVENTS,
 } from '../../../infrastructure/kafka/kafka.constants';
-import { Order, OrderItem, OrderStatus, ORDER_TRANSITIONS } from '../domain/order.entity';
+import {
+    Order,
+    OrderItem,
+    OrderStatus,
+    ORDER_TRANSITIONS,
+    ShippingAddress,
+} from '../domain/order.entity';
 import { UpdateShippingDto } from './dto/update-shipping.dto';
 
 export interface CreateOrderResult {
@@ -36,7 +42,10 @@ export class OrdersService {
      * Si falla el descuento de un ítem, hace rollback de los ya descontados
      * (mini-Saga sin transacción distribuida).
      */
-    async create(userId: string): Promise<Order> {
+    async create(
+        userId: string,
+        shippingAddress?: ShippingAddress,
+    ): Promise<Order> {
         const cart = await this.cartService.getCart(userId);
         if (cart.items.length === 0) {
             throw new BadRequestException('El carrito está vacío');
@@ -78,6 +87,7 @@ export class OrdersService {
             items,
             total: total.toFixed(2),
             currency: 'USD',
+            shippingAddress: shippingAddress ?? null,
         });
 
         // 3) Registrar evento de creación + persistir orden

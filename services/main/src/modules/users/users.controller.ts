@@ -33,7 +33,8 @@ export class UsersController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Listar usuarios con paginación (autenticado)' })
+  @Roles('admin')
+  @ApiOperation({ summary: 'Listar usuarios con paginación (solo admin)' })
   findAll(
     @Query('page') page = '1',
     @Query('limit') limit = '20',
@@ -42,7 +43,8 @@ export class UsersController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Obtener un usuario por ID (autenticado)' })
+  @Roles('admin')
+  @ApiOperation({ summary: 'Obtener un usuario por ID (solo admin)' })
   @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.findOne(id);
