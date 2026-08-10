@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { api, type User, type UserRole } from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
@@ -41,6 +41,7 @@ export function UsersAdmin() {
     const [message, setMessage] = useState<string | null>(null);
     const [form, setForm] = useState<FormState>(emptyForm);
     const [busyId, setBusyId] = useState<string | null>(null);
+    const [search, setSearch] = useState('');
 
     const load = useCallback(async () => {
         if (!accessToken) return;
@@ -59,6 +60,17 @@ export function UsersAdmin() {
     useEffect(() => {
         if (accessToken) void load();
     }, [accessToken, load]);
+
+    // Filtro client-side por email o nombre completo
+    const filteredUsers = useMemo(() => {
+        const q = search.trim().toLowerCase();
+        if (!q) return users;
+        return users.filter(
+            (u) =>
+                u.email.toLowerCase().includes(q) ||
+                `${u.firstName} ${u.lastName}`.toLowerCase().includes(q),
+        );
+    }, [users, search]);
 
     const handleField = (field: keyof FormState) => (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -189,8 +201,15 @@ export function UsersAdmin() {
 
             {/* Tabla de usuarios */}
             <div className="rounded-xl border bg-card">
-                <div className="border-b p-4">
+                <div className="flex flex-col gap-2 border-b p-4 sm:flex-row sm:items-center sm:justify-between">
                     <h2 className="text-lg font-semibold">Usuarios ({users.length})</h2>
+                    <Input
+                        type="search"
+                        placeholder="Buscar por email o nombre..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="sm:max-w-xs"
+                    />
                 </div>
                 {loading ? (
                     <div className="space-y-3 p-6">
@@ -199,6 +218,10 @@ export function UsersAdmin() {
                     </div>
                 ) : users.length === 0 ? (
                     <div className="p-8 text-center text-muted-foreground">No hay usuarios aún.</div>
+                ) : filteredUsers.length === 0 ? (
+                    <div className="p-8 text-center text-muted-foreground">
+                        No se encontraron usuarios con ese filtro.
+                    </div>
                 ) : (
                     <Table>
                         <TableHeader>
@@ -211,7 +234,7 @@ export function UsersAdmin() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {users.map((u) => (
+                            {filteredUsers.map((u) => (
                                 <TableRow key={u.id}>
                                     <TableCell>
                                         <div className="font-medium">{u.email}</div>

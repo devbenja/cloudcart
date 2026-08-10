@@ -1,10 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { getServerSession } from 'next-auth';
 import { ArrowRight, Flame } from 'lucide-react';
 import { CatalogClient } from '@/components/catalog-client';
 import { CategoryTiles } from '@/components/category-tiles';
 import { ProductCard } from '@/components/product-card';
 import { api, type Product } from '@/lib/api';
+import { authOptions, isAdmin } from '@/lib/auth';
+import { AdminHero } from '@/components/admin-hero';
 
 export const metadata: Metadata = {
     title: 'Inicio',
@@ -37,9 +40,16 @@ export default async function CatalogPage({ searchParams }: Props) {
     // Ofertas del día: productos con precio original (descuento)
     const deals = all.data.filter((p) => p.originalPrice).slice(0, 8);
 
+    // Si es admin, mostramos el hero de KPIs en vez del hero de marketing.
+    const session = await getServerSession(authOptions);
+    const admin = isAdmin(session?.user);
+
     return (
         <div className="space-y-10">
-            {/* Hero */}
+            {/* Hero: KPIs para admin, marketing para clientes */}
+            {admin ? (
+                <AdminHero />
+            ) : (
             <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-primary via-rose-500 to-fuchsia-500 text-primary-foreground">
                 <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(circle_at_20%_50%,white_2px,transparent_2px)] [background-size:32px_32px]" />
                 <div className="relative grid gap-6 p-8 sm:p-12 lg:grid-cols-2 lg:items-center">
@@ -80,12 +90,13 @@ export default async function CatalogPage({ searchParams }: Props) {
                     </div>
                 </div>
             </section>
+            )}
 
             {/* Tiles de categorías */}
             <CategoryTiles categories={categories} />
 
-            {/* Ofertas del día */}
-            {deals.length > 0 && (
+            {/* Ofertas del día (solo clientes) */}
+            {!admin && deals.length > 0 && (
                 <section id="ofertas">
                     <div className="mb-4 flex items-center justify-between">
                         <h2 className="flex items-center gap-2 text-lg font-bold tracking-tight">

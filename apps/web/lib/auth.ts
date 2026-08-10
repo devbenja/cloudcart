@@ -10,6 +10,11 @@ export interface SessionUser {
     accessToken?: string;
 }
 
+/** ¿El usuario tiene el rol admin (del realm de Keycloak)? */
+export function isAdmin(user?: { roles?: string[] } | null): boolean {
+    return !!user?.roles?.includes('admin');
+}
+
 export const authOptions: NextAuthOptions = {
     providers: [
         KeycloakProvider({

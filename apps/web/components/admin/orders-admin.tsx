@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import {
     api,
@@ -12,6 +12,8 @@ import {
 } from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 
@@ -35,6 +37,8 @@ export function OrdersAdmin() {
     const [expanded, setExpanded] = useState<string | null>(null);
     const [pendingStatus, setPendingStatus] = useState<Record<string, OrderStatus>>({});
     const [saving, setSaving] = useState<string | null>(null);
+    const [search, setSearch] = useState('');
+    const [statusFilter, setStatusFilter] = useState<'all' | OrderStatus>('all');
 
     const load = useCallback(async () => {
         if (!accessToken) return;
@@ -66,6 +70,16 @@ export function OrdersAdmin() {
     useEffect(() => {
         if (accessToken) void load();
     }, [accessToken, load]);
+
+    // Filtro client-side: por id de orden (substring) y por estado
+    const filteredOrders = useMemo(() => {
+        const q = search.trim().toLowerCase();
+        return orders.filter((o) => {
+            const matchesStatus = statusFilter === 'all' || o.status === statusFilter;
+            const matchesSearch = !q || o.id.toLowerCase().includes(q);
+            return matchesStatus && matchesSearch;
+        });
+    }, [orders, search, statusFilter]);
 
     const userLabel = (userId: string) => {
         const u = usersByKeycloak.get(userId);
@@ -114,6 +128,30 @@ export function OrdersAdmin() {
                         Cambiá el estado según la máquina de estados.
                     </p>
                 </div>
+
+                {/* Barra de búsqueda y filtro por estado */}
+                <div className="flex flex-col gap-2 border-b p-4 sm:flex-row sm:items-center sm:gap-3">
+                    <Input
+                        type="search"
+                        placeholder="Buscar por id de pedido..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="sm:max-w-xs"
+                    />
+                    <Select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value as 'all' | OrderStatus)}
+                        className="sm:w-48"
+                    >
+                        <option value="all">Todos los estados</option>
+                        <option value="pending">Pendiente</option>
+                        <option value="paid">Pagado</option>
+                        <option value="shipped">Enviado</option>
+                        <option value="delivered">Entregado</option>
+                        <option value="cancelled">Cancelado</option>
+                    </Select>
+                </div>
+
                 {loading ? (
                     <div className="space-y-3 p-6">
                         <Skeleton className="h-12 w-full" />
@@ -121,9 +159,13 @@ export function OrdersAdmin() {
                     </div>
                 ) : orders.length === 0 ? (
                     <div className="p-8 text-center text-muted-foreground">No hay pedidos aún.</div>
+                ) : filteredOrders.length === 0 ? (
+                    <div className="p-8 text-center text-muted-foreground">
+                        No se encontraron pedidos con ese filtro.
+                    </div>
                 ) : (
                     <ul className="divide-y">
-                        {orders.map((order) => {
+                        {filteredOrders.map((order) => {
                             const s = STATUS[order.status];
                             const transitions = ORDER_TRANSITIONS[order.status];
                             const isOpen = expanded === order.id;
