@@ -25,6 +25,9 @@ secretGenerator:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
       - KEYCLOAK_CLIENT_SECRET=backend-secret-change-in-production
+    # Secrets reales fuera de git (ver infra/k8s/secrets.env, gitignored)
+    envs:
+      - secrets.env
 
 configMapGenerator:
   - name: env-config

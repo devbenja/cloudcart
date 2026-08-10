@@ -12,6 +12,8 @@ out/
 .env
 .env.local
 .env.*.local
+# Secrets locales para kustomize (no versionar)
+infra/k8s/secrets.env
 
 # IDE
 .vscode/
